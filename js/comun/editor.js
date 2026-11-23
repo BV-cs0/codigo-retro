@@ -1,0 +1,162 @@
+(function () {
+  'use strict';
+  const palabra = /^(for|in|range|if|else|not|def)$/;
+
+  const palabraCurso = /^(elif|while|break|continue|return|True|False|None|and|or|pass|print|len|try|except|finally|raise|input|import|from|as|del)$/;
+  const tokensCurso = /#.*|f?(?:"(?:\\.|[^"\\])*"?|'(?:\\.|[^'\\])*'?)|[\p{L}_][\p{L}\p{N}_]*|\d+|[^]/gu;
+  const tokensBash = /#.*|"(?:\\.|[^"\\])*"?|'[^']*'?|\$(?:\{[^}]*\}|[A-Za-z_]\w*|[0-9@*?#])|[A-Za-z_]\w*|\d+|[^]/g;
+  const palabraBash = /^(if|then|elif|else|fi|case|in|esac|for|while|until|do|done|function|local|return|break|continue)$/;
+
+  function filaColoreada(texto, ordenes, curso) {
+    const fila = document.createElement('span');
+    fila.className = 'fila';
+    const bash = curso === 'bash';
+    const tokens = texto.match(bash ? tokensBash : curso ? tokensCurso : /#.*|[A-Za-z_][A-Za-z_0-9]*|\d+|[^]/g) || [];
+    for (const token of tokens) {
+      const pieza = document.createElement('span');
+      pieza.textContent = token;
+      if (token.startsWith('#')) pieza.className = 'comentario';
+      else if (curso && /^f?["']/.test(token)) pieza.className = 'cadena';
+      else if (bash ? palabraBash.test(token) || token.startsWith('$') : palabra.test(token) || (curso && palabraCurso.test(token)))
+        pieza.className = 'palabra';
+      else if (/^\d+$/.test(token)) pieza.className = 'numero';
+      else if (ordenes.has(token)) pieza.className = 'orden';
+      fila.append(pieza);
+    }
+    fila.append('\u200b');
+    return fila;
+  }
+
+  function pintarFilas(entrada, espejo, numeros, ordenes, linea, clase, curso) {
+    const vista = document.createDocumentFragment();
+    const margen = document.createDocumentFragment();
+    entrada.value.split('\n').forEach((texto, i) => {
+      const fila = filaColoreada(texto, ordenes, curso);
+      const numero = document.createElement('span');
+      if (i + 1 === linea) fila.classList.add(clase);
+      numero.textContent = i + 1;
+      vista.append(fila);
+      margen.append(numero);
+    });
+    espejo.replaceChildren(vista);
+    numeros.replaceChildren(margen);
+  }
+
+  function conectarTeclado(entrada, editar) {
+    let salir = false;
+    entrada.addEventListener('blur', () => { salir = false; });
+    entrada.addEventListener('keydown', evento => {
+      if (evento.key === 'Escape' && !entrada.readOnly) {
+        salir = true;
+        return;
+      }
+      if (entrada.readOnly || evento.ctrlKey || evento.altKey || evento.metaKey) return;
+      if (evento.key === 'Tab' && salir) {
+        salir = false;
+        return;
+      }
+      salir = false;
+      if (evento.key !== 'Tab' && evento.key !== 'Enter') return;
+      evento.preventDefault();
+      aplicarSangria(entrada, evento);
+      editar();
+    });
+  }
+
+  function aplicarSangria(entrada, evento) {
+    const inicio = entrada.selectionStart;
+    const fin = entrada.selectionEnd;
+    const lineaInicio = inicio === 0 ? 0 : entrada.value.lastIndexOf('\n', inicio - 1) + 1;
+    const antes = entrada.value.slice(lineaInicio, inicio);
+    if (evento.key === 'Enter') {
+      const sangria = antes.match(/^[ \t]*/)[0];
+      const paso = sangria.startsWith('\t') ? '\t' : '    ';
+      const extra = antes.split('#')[0].trimEnd().endsWith(':') ? paso : '';
+      entrada.setRangeText('\n' + sangria + extra, inicio, fin, 'end');
+    } else if (evento.shiftKey) {
+      const quitar = entrada.value.slice(lineaInicio).match(/^( {1,4}|\t)/)?.[0].length || 0;
+      if (quitar) entrada.setRangeText('', lineaInicio, lineaInicio + quitar, 'preserve');
+    } else {
+      entrada.setRangeText('    ', inicio, fin, 'end');
+    }
+  }
+
+  function revelarFila(entrada, fila) {
+    if (fila && (fila.offsetTop < entrada.scrollTop ||
+      fila.offsetTop + fila.offsetHeight > entrada.scrollTop + entrada.clientHeight)) {
+      entrada.scrollTop = Math.max(0, fila.offsetTop - entrada.clientHeight / 2);
+    }
+  }
+
+  class SesionEditor {
+    constructor({ entrada, espejo, numeros, contador, error }, cambio) {
+      Object.assign(this, { entrada, espejo, numeros, contador, error, cambio, linea: 0, clase: '' });
+      entrada.addEventListener('input', () => this.editar());
+      entrada.addEventListener('scroll', () => this.sincronizar());
+      conectarTeclado(entrada, () => this.editar());
+    }
+
+    sincronizar() {
+      this.espejo.scrollTop = this.numeros.scrollTop = this.entrada.scrollTop;
+      this.espejo.scrollLeft = this.entrada.scrollLeft;
+    }
+
+    pintar() {
+      const { entrada, espejo, numeros, ordenes, linea, clase, nivel } = this;
+      pintarFilas(entrada, espejo, numeros, ordenes, linea, clase, nivel.lenguaje || nivel.curso);
+      const cantidad = window.CR.Python.contarLineas(entrada.value);
+      this.contador.textContent = 'Líneas: ' + cantidad + (nivel.maxLineas ? ' / ' + nivel.maxLineas : '');
+      this.sincronizar();
+    }
+
+    limpiar() {
+      this.linea = 0;
+      this.clase = '';
+      this.error.textContent = '';
+      this.entrada.removeAttribute('aria-invalid');
+    }
+
+    editar() {
+      this.limpiar();
+      this.pintar();
+      this.cambio(this.entrada.value);
+    }
+
+    configurar(ficha, texto) {
+      this.nivel = ficha;
+      this.ordenes = new Set(ficha.ordenes.map(o => o.nombre));
+      this.entrada.value = texto;
+      this.entrada.scrollTop = this.entrada.scrollLeft = 0;
+      this.limpiar();
+      this.pintar();
+    }
+
+    texto() { return this.entrada.value; }
+    bloquear(estado) { this.entrada.readOnly = estado; }
+
+    destacar(numero, mensaje = '') {
+      this.linea = numero;
+      this.clase = mensaje ? 'fallida' : 'activa';
+      this.error.textContent = mensaje;
+      if (mensaje) this.entrada.setAttribute('aria-invalid', 'true');
+      else this.entrada.removeAttribute('aria-invalid');
+      this.pintar();
+      revelarFila(this.entrada, this.espejo.children[numero - 1]);
+      this.sincronizar();
+    }
+
+    copiar(texto) {
+      const { entrada, espejo } = this;
+      if (entrada.readOnly) return;
+      entrada.value += (entrada.value && !entrada.value.endsWith('\n') ? '\n' : '') + texto;
+      entrada.focus();
+      entrada.setSelectionRange(entrada.value.length, entrada.value.length);
+      this.editar();
+      entrada.scrollTop = espejo.scrollHeight;
+    }
+  }
+
+  const Editor = { crear: (elementos, cambio) => new SesionEditor(elementos, cambio) };
+  if (typeof window !== 'undefined') (window.CR ||= {}).Editor = Editor;
+  if (typeof module !== 'undefined') module.exports = Editor;
+})();

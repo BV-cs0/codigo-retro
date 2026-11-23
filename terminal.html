@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>El Faro · Código Retro</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="stylesheet" href="css/terminal.css">
+</head>
+<body class="faro">
+  <main class="faro-marco">
+    <header class="faro-cabecera">
+      <a href="index.html">← Menú</a>
+      <h1>El Faro</h1>
+      <a id="enlace-capitulos" href="#capitulos">Capítulos</a>
+      <label>Fósforo <select id="fosforo">
+        <option value="verde">Verde</option><option value="ambar">Ámbar</option><option value="blanco">Blanco</option>
+      </select></label>
+      <button type="button" id="sonido-faro" aria-pressed="false">Silenciar</button>
+    </header>
+    <section id="capitulos" hidden aria-labelledby="titulo-capitulos">
+      <h2 id="titulo-capitulos">Capítulos</h2><p id="progreso-capitulos"></p>
+      <div id="lista-capitulos" class="lista-capitulos"></div>
+    </section>
+    <div id="guardia" class="guardia">
+      <section class="faro-panel" aria-labelledby="titulo-mision">
+        <p id="numero-mision" class="faro-indice"></p>
+        <h2 id="titulo-mision"></h2>
+        <canvas id="lumen" width="16" height="16" role="img" aria-label="Lumen"></canvas>
+        <p id="texto-mision"></p>
+        <h3>Objetivos</h3><ul id="objetivos"></ul>
+        <div class="acciones-mision">
+          <button type="button" id="pista">💡 Pista</button>
+          <button type="button" id="reiniciar">↺ Reiniciar misión</button>
+        </div>
+        <p id="texto-pista" role="status"></p>
+      </section>
+      <section class="crt" data-fosforo="verde" aria-label="Terminal de Faro-7">
+        <div id="pantalla" class="pantalla-crt">
+          <div id="salida" role="log" aria-label="Salida de la terminal"></div>
+          <form id="orden" class="orden">
+            <label id="prompt" for="linea"></label>
+            <input id="linea" aria-label="Línea de comandos" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
+          </form>
+        </div>
+      </section>
+      <section class="faro-panel faro-ayuda" aria-label="Ayuda">
+        <div class="pestanas" role="tablist" aria-label="Vistas de ayuda">
+          <button type="button" id="tab-chuleta" role="tab" aria-controls="chuleta" aria-selected="true">Chuleta</button>
+          <button type="button" id="tab-mapa" role="tab" aria-controls="mapa" aria-selected="false" tabindex="-1">Mapa</button>
+        </div>
+        <div id="chuleta" role="tabpanel" aria-labelledby="tab-chuleta"></div>
+        <div id="mapa" role="tabpanel" aria-labelledby="tab-mapa" hidden></div>
+      </section>
+    </div>
+  </main>
+  <dialog id="victoria" class="faro-panel" aria-labelledby="titulo-victoria">
+    <h2 id="titulo-victoria">Misión cumplida</h2>
+    <canvas id="torre" width="48" height="32" role="img" aria-label="Faro-7 encendido" hidden></canvas>
+    <p id="cierre"></p><div id="aprendido"></div>
+    <form method="dialog" class="acciones-mision">
+      <button type="submit">Volver a la terminal</button>
+      <button type="button" id="siguiente">Siguiente misión</button>
+    </form>
+  </dialog>
+  <script src="js/comun/progreso.js"></script>
+  <script src="js/comun/sonido.js"></script>
+  <script src="js/shell/sfa.js"></script>
+  <script src="js/shell/lexico.js"></script>
+  <script src="js/shell/analizador.js"></script>
+  <script src="js/shell/aritmetica.js"></script>
+  <script src="js/shell/expansion.js"></script>
+  <script src="js/shell/comandos/base.js"></script>
+  <script src="js/shell/comandos/rutas.js"></script>
+  <script src="js/shell/comandos/listado.js"></script>
+  <script src="js/shell/comandos/texto.js"></script>
+  <script src="js/shell/comandos/buscar.js"></script>
+  <script src="js/shell/comandos/diff.js"></script>
+  <script src="js/shell/comandos/sesion.js"></script>
+  <script src="js/shell/ayuda.js"></script>
+  <script src="js/shell/ejecutor.js"></script>
+  <script src="js/shell/bash-sintaxis.js"></script>
+  <script src="js/shell/bash-integradas.js"></script>
+  <script src="js/shell/bash.js"></script>
+  <script src="js/terminal/misiones.js"></script>
+  <script src="js/terminal/progreso.js"></script>
+  <script src="js/terminal/sprites.js"></script>
+  <script src="js/terminal/teclado.js"></script>
+  <script src="js/terminal/paneles.js"></script>
+  <script src="js/terminal/juego.js"></script>
+</body>
+</html>

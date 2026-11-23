@@ -1,0 +1,27 @@
+.curso-bash .argumentos { display: flex; gap: .5rem; align-items: center; margin-bottom: .65rem; }
+.curso-bash input { min-width: 0; max-width: 100%; font: inherit; }
+.curso-bash .guia canvas { flex: 0 0 47px; image-rendering: pixelated; }
+.curso-bash .bocadillo strong { color: #eaa03f; }
+.curso-bash #final-curso canvas { margin-inline: auto; }
+.curso-bash #lumen-final { width: 192px; max-width: 100%; }
+.curso-bash #progreso-temas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: .6rem; }
+.curso-bash #progreso-temas li { display: grid; gap: .35rem; }
+.curso-bash #progreso-temas progress { width: 100%; accent-color: var(--acento); }
+.curso-bash .terminal pre { color: #8cf2a8; white-space: pre-wrap; overflow-wrap: anywhere; }
+.curso-bash .terminal .error { color: #ff9a9a; }
+.curso-bash .terminal .guia-error { color: #c0bdc7; }
+.curso-bash #archivos { padding-inline-start: .5em; list-style: none; font-family: monospace; overflow-wrap: anywhere; }
+.curso-bash #archivos .nuevo { color: #8cf2a8; }
+.curso-bash #archivos .modificado { color: #ffe5a0; }
+.curso-bash #archivos .borrado { color: #ff9a9a; text-decoration: line-through; }
+.curso-bash #resumen pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.tarjeta.portada-bash {
+  --marco: #a66d35;
+  --tema: #eaa03f;
+  --escena: #16241e;
+  display: grid;
+  grid-template-columns: minmax(6rem, 22%) minmax(0, 1fr);
+}
+.portada-bash .escena { min-height: 110px; border: 0; border-right: 3px solid var(--marco); }
+.portada-bash .escena canvas { width: min(96%, 120px); }
+.curso-bash { --acento: #8cf2a8; --fondo: #151b18; }

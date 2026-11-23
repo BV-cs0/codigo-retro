@@ -1,0 +1,31 @@
+# Sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editores y herramientas
+.vscode/
+.idea/
+.claude/
+*.swp
+
+# Perfiles de navegador de pruebas y temporales
+.verificacion*/
+tmp/
+temp/
+*.tmp
+*.log
+
+# Secretos: nunca deben subirse
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12
+
+# Compilaciones (ejecutable)
+node_modules/
+dist/
+build/
+*.exe

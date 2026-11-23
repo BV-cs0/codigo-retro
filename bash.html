@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scripting con Bash — Código Retro</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="stylesheet" href="css/curso.css">
+  <link rel="stylesheet" href="css/bash.css">
+</head>
+<body class="curso curso-bash">
+  <header class="barra">
+    <h1>Scripting con Bash</h1>
+    <nav aria-label="Navegación del curso">
+      <a class="boton" href="index.html">← Menú principal</a>
+      <button id="temas" hidden>Ver temas</button>
+      <button id="sonido">Silenciar</button>
+    </nav>
+  </header>
+  <main class="contenedor">
+    <section id="indice">
+      <div class="cabecera-partida">
+        <h2>Aprende paso a paso</h2>
+        <button id="continuar" class="primario">Continuar donde lo dejé</button>
+      </div>
+      <div id="cartuchos"></div>
+    </section>
+    <section id="paso-curso" hidden>
+      <p id="posicion"></p>
+      <h2 id="titulo-paso" tabindex="-1"></h2>
+      <div class="columnas">
+        <section class="panel leccion" aria-label="Lección">
+          <p id="etiqueta" hidden></p>
+          <div class="guia">
+            <canvas id="lumen" width="16" height="16" role="img" aria-label="Lumen"></canvas>
+            <div class="bocadillo"><strong>Lumen · jefe de turno</strong><div id="texto"></div></div>
+          </div>
+          <div id="prediccion" hidden><h3 id="pregunta"></h3><div id="opciones"></div><p id="respuesta" role="status"></p></div>
+          <div id="reto" hidden>
+            <h3>Objetivo</h3><p id="objetivo"></p>
+            <button id="pista">Ver pista</button> <button id="solucion" hidden>Ver una solución</button>
+            <p id="ayuda" role="status"></p>
+          </div>
+        </section>
+        <section id="zona-editor" class="panel">
+          <label class="argumentos">Argumentos: <input id="argumentos" autocomplete="off" spellcheck="false"></label>
+          <div class="cabecera-editor"><label for="codigo" id="archivo"></label><span id="contador"></span></div>
+          <div class="editor">
+            <div id="numeros" aria-hidden="true"></div>
+            <div class="fuente-codigo">
+              <pre id="espejo" aria-hidden="true"></pre>
+              <textarea id="codigo" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="ayuda-editor"></textarea>
+            </div>
+          </div>
+          <div class="controles">
+            <button id="ejecutar" class="primario">▶ Ejecutar</button>
+            <button id="comprobar" hidden>✔ Comprobar</button>
+            <button id="paso">Paso a paso</button>
+            <button id="parar" disabled>■ Parar</button>
+            <button id="restaurar">↺ Restaurar código</button>
+            <label>Velocidad <select id="velocidad"><option value="300">Lenta</option><option value="100">Normal</option><option value="0" selected>Rápida</option></select></label>
+          </div>
+          <p id="ayuda-editor">Tab añade sangría. Pulsa Esc y luego Tab para salir del editor.</p>
+          <p id="error" role="status"></p>
+        </section>
+        <section id="resultado" class="panel">
+          <h3>Consola</h3>
+          <div class="terminal" tabindex="0" aria-label="Salida de consola">
+            <pre id="salida" aria-live="polite"></pre>
+            <form id="entrada-terminal" hidden><label><span id="prompt"></span><input id="entrada" aria-label="Entrada del script" autocomplete="off"></label></form>
+            <form id="mini-terminal" hidden><label>aprendiz@faro $ <input id="orden" aria-label="Orden de terminal" autocomplete="off"></label>
+              <button type="submit">Enviar</button></form>
+          </div>
+          <p id="estado" role="status"></p>
+          <h3>Archivos</h3>
+          <ul id="archivos" aria-label="Árbol de archivos"></ul>
+          <h3>Variables</h3>
+          <table><thead><tr><th scope="col">Nombre</th><th scope="col">Valor</th></tr></thead><tbody id="variables"></tbody></table>
+        </section>
+        <section id="resumen" class="panel" hidden>
+          <h3>Chuleta</h3>
+          <pre id="codigo-final"></pre>
+          <a id="enlace-faro" class="boton" hidden>Ahora puedes automatizar la caza del intruso</a>
+          <button id="siguiente-tema" class="primario"></button>
+        </section>
+      </div>
+      <nav class="navegacion" aria-label="Pasos del tema">
+        <button id="anterior">← Anterior</button>
+        <div id="puntos"></div>
+        <button id="siguiente">Siguiente →</button>
+        <button id="saltar">Saltar paso</button>
+      </nav>
+    </section>
+    <section id="final-curso" class="panel" hidden aria-labelledby="titulo-final">
+      <canvas id="lumen-final" width="48" height="32" role="img" aria-label="Lumen celebrando junto al faro"></canvas>
+      <h2 id="titulo-final" tabindex="-1"><canvas id="letras-final" width="184" height="20" role="img" aria-label="Final del curso">Final del curso</canvas></h2>
+      <p id="progreso-final"></p>
+      <ul id="progreso-temas" class="progreso-temas"></ul>
+      <div class="acciones-final">
+        <button id="volver-temas">Volver a los temas</button>
+        <a class="boton primario" href="ejercicios.html#bash">Practicar en el Taller</a>
+        <a class="boton" href="terminal.html#mision-8-1">Ir al capítulo 8 de El Faro</a>
+      </div>
+    </section>
+  </main>
+  <script src="js/comun/pixel.js"></script>
+  <script src="js/comun/progreso.js"></script>
+  <script src="js/comun/sonido.js"></script>
+  <script src="js/comun/python.js"></script>
+  <script src="js/comun/editor.js"></script>
+  <script src="js/terminal/sprites.js"></script>
+  <script src="js/shell/sfa.js"></script>
+  <script src="js/shell/lexico.js"></script>
+  <script src="js/shell/analizador.js"></script>
+  <script src="js/shell/aritmetica.js"></script>
+  <script src="js/shell/expansion.js"></script>
+  <script src="js/shell/comandos/base.js"></script>
+  <script src="js/shell/comandos/rutas.js"></script>
+  <script src="js/shell/comandos/listado.js"></script>
+  <script src="js/shell/comandos/texto.js"></script>
+  <script src="js/shell/comandos/buscar.js"></script>
+  <script src="js/shell/comandos/diff.js"></script>
+  <script src="js/shell/comandos/sesion.js"></script>
+  <script src="js/shell/ayuda.js"></script>
+  <script src="js/shell/ejecutor.js"></script>
+  <script src="js/shell/bash-sintaxis.js"></script>
+  <script src="js/shell/bash-integradas.js"></script>
+  <script src="js/shell/bash.js"></script>
+  <script src="js/curso/bash-temas.js"></script>
+  <script src="js/curso/bash-proyecto.js"></script>
+  <script src="js/curso/bash-progreso.js"></script>
+  <script src="js/curso/bash-validar.js"></script>
+  <script src="js/curso/bash-pantalla.js"></script>
+</body>
+</html>

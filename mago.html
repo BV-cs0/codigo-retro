@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>El hechizo de Brasa · Código Retro</title>
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body class="mago">
+  <header class="barra">
+    <div><h1>El hechizo de Brasa</h1><p id="encabezado-nivel"></p></div>
+    <nav aria-label="Navegación"><a class="boton" href="index.html">Menú</a><button id="sonido" type="button">Silenciar</button></nav>
+  </header>
+  <main class="contenedor">
+    <section id="selector" class="panel selector">
+      <h2>Elige un nivel</h2>
+      <div id="niveles"></div>
+    </section>
+    <section id="partida" hidden>
+      <div class="cabecera-partida">
+        <h2 id="titulo-nivel"></h2><span id="estrellas" class="estrellas" aria-label="Estrellas del nivel"></span>
+        <button type="button" id="volver-niveles">Niveles</button>
+      </div>
+      <div class="partida">
+        <section class="panel mundo" aria-label="Mapa y controles">
+          <div class="sobre-mapa"><strong id="variante"></strong><span id="mapas-info"></span></div>
+          <canvas id="mapa" width="204" height="192" aria-label="Mapa de Brasa">Mapa de Brasa</canvas>
+          <div id="variables" class="variables" hidden><strong>Variables</strong><p id="datos"></p></div>
+          <div class="controles">
+            <button class="primario" type="button" id="ejecutar">▶ Ejecutar</button>
+            <button type="button" id="paso">Paso a paso</button>
+            <button type="button" id="parar">■ Parar</button>
+            <button type="button" id="reiniciar">↺ Reiniciar mapa</button>
+            <button type="button" id="pista">💡 Pista</button>
+            <label>Velocidad <select id="velocidad"><option value="620">Lenta</option><option value="285" selected>Normal</option><option value="75">Rápida</option></select></label>
+          </div>
+          <p id="mensaje" role="status"></p>
+        </section>
+        <section class="panel panel-editor" aria-label="Editor de Python">
+          <div class="cabecera-editor"><label for="codigo">Código Python</label><span id="contador"></span></div>
+          <div class="editor">
+            <div id="numeros" aria-hidden="true"></div>
+            <div class="fuente-codigo">
+              <pre id="espejo" aria-hidden="true"></pre>
+              <textarea id="codigo" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="ayuda-editor error"></textarea>
+            </div>
+          </div>
+          <p id="error" role="alert"></p>
+          <p id="ayuda-editor">Tab sangra · Mayús+Tab quita sangría · Esc y Tab salen del editor</p>
+        </section>
+        <aside class="panel libreta">
+          <h3 id="libreta-titulo"></h3>
+          <dl id="ordenes"></dl>
+          <h4>Ejemplo</h4>
+          <pre id="ejemplo"></pre>
+          <button id="copiar" type="button">Copiar al editor</button>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <dialog id="dialogo" aria-labelledby="dialogo-titulo">
+    <div class="dialogo-interior">
+      <canvas id="retrato-dialogo" width="56" height="44" aria-hidden="true"></canvas>
+      <div><h2 id="dialogo-titulo"></h2><div id="dialogo-texto"></div><div id="dialogo-acciones"></div></div>
+    </div>
+  </dialog>
+  <script src="js/comun/motor.js"></script>
+  <script src="js/comun/python.js"></script>
+  <script src="js/comun/progreso.js"></script>
+  <script src="js/comun/lecciones.js"></script>
+  <script src="js/comun/tablero.js"></script>
+  <script src="js/comun/pixel.js"></script>
+  <script src="js/comun/sonido.js"></script>
+  <script src="js/comun/editor.js"></script>
+  <script src="js/comun/nivel-ui.js"></script>
+  <script src="js/mago/mundo.js"></script>
+  <script src="js/mago/niveles.js"></script>
+  <script src="js/mago/juego.js"></script>
+</body>
+</html>

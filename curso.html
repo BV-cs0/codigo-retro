@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Curso de Python — Código Retro</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="stylesheet" href="css/curso.css">
+  <link rel="stylesheet" href="css/taller.css">
+</head>
+<body class="curso">
+  <header class="barra">
+    <h1>Curso de Python</h1>
+    <nav aria-label="Navegación del curso">
+      <a class="boton" href="index.html">← Menú principal</a>
+      <button id="temas" hidden>Ver temas</button>
+      <button id="sonido">Silenciar</button>
+    </nav>
+  </header>
+  <main class="contenedor">
+    <section id="indice" aria-labelledby="titulo-indice">
+      <div class="cabecera-partida">
+        <h2 id="titulo-indice">Aprende paso a paso</h2>
+        <button id="continuar" class="primario">Continuar donde lo dejé</button>
+      </div>
+      <div id="cartuchos"></div>
+    </section>
+    <section id="paso-curso" aria-labelledby="titulo-paso" hidden>
+      <p id="posicion"></p>
+      <h2 id="titulo-paso" tabindex="-1"></h2>
+      <div class="columnas">
+        <section class="panel leccion" aria-label="Lección">
+          <p id="etiqueta" hidden></p>
+          <div class="guia">
+            <canvas data-cursor width="16" height="15" role="img" aria-label="Cursor"></canvas>
+            <div id="texto" class="bocadillo"></div>
+          </div>
+          <aside id="recuerda" hidden><h3>Recuerda</h3><p id="clave"></p></aside>
+          <div id="prediccion" hidden><h3 id="pregunta"></h3><div id="opciones"></div><p id="respuesta" role="status"></p></div>
+          <div id="reto" hidden>
+            <h3>Objetivo</h3><p id="objetivo"></p>
+            <div class="controles"><button id="pista">Ver pista</button><button id="solucion" hidden>Ver una solución</button></div>
+            <p id="ayuda" role="status"></p>
+          </div>
+        </section>
+        <section id="zona-editor" class="panel">
+          <div class="cabecera-editor"><label for="codigo">Editor</label><span id="contador"></span></div>
+          <div class="editor">
+            <div id="numeros" aria-hidden="true"></div>
+            <div class="fuente-codigo">
+              <pre id="espejo" aria-hidden="true"></pre>
+              <textarea id="codigo" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="ayuda-editor"></textarea>
+            </div>
+          </div>
+          <div class="controles">
+            <button id="ejecutar" class="primario">▶ Ejecutar</button>
+            <button id="comprobar" hidden>✔ Comprobar</button>
+            <button id="paso">Paso a paso</button>
+            <button id="parar" disabled>■ Parar</button>
+            <button id="restaurar">↺ Restaurar código</button>
+            <label>Velocidad <select id="velocidad"><option value="300">Lenta</option><option value="100">Normal</option><option value="0" selected>Rápida</option></select></label>
+          </div>
+          <p id="ayuda-editor">Tab añade sangría. Pulsa Esc y luego Tab para salir del editor.</p>
+          <p id="error"></p>
+        </section>
+        <section id="resultado" class="panel">
+          <canvas id="mapa" width="192" height="192" role="img" hidden></canvas>
+          <h3>Consola</h3>
+          <div class="terminal" tabindex="0" aria-label="Salida de consola">
+            <pre id="salida"></pre>
+            <form id="entrada-terminal" hidden>
+              <input id="entrada" type="text" aria-label="Entrada del programa" autocomplete="off" spellcheck="false">
+            </form>
+            <p id="error-consola" role="alert"></p><p id="error-original"></p>
+          </div>
+          <p id="estado" role="status"></p>
+          <table id="casos" hidden aria-label="Resultados de los casos">
+            <thead><tr><th>Resultado</th><th>Entradas</th><th>Primera diferencia</th></tr></thead>
+            <tbody id="filas-casos"></tbody>
+          </table>
+          <h3>Variables</h3>
+          <table aria-label="Variables visibles"><thead><tr><th scope="col">Nombre</th><th scope="col">Valor</th></tr></thead><tbody id="variables"></tbody></table>
+          <h3>Llamadas</h3>
+          <ol id="llamadas"></ol>
+        </section>
+        <section id="resumen" class="panel" hidden>
+          <dl id="chuleta"></dl>
+          <pre id="codigo-final" hidden></pre>
+          <details id="tu-codigo" hidden><summary>Tu código del reto anterior</summary><pre id="codigo-jugador"></pre></details>
+          <button id="siguiente-tema" class="primario"></button>
+        </section>
+      </div>
+      <nav class="navegacion" aria-label="Pasos del tema">
+        <button id="anterior">← Anterior</button>
+        <div id="puntos"></div>
+        <button id="siguiente">Siguiente →</button>
+        <button id="saltar">Saltar paso</button>
+      </nav>
+    </section>
+    <section id="final-curso" class="panel" hidden aria-labelledby="titulo-final">
+      <canvas data-cursor data-celebra width="16" height="15" role="img" aria-label="Cursor celebrando"></canvas>
+      <h2 id="titulo-final" tabindex="-1"><canvas id="letras-final" width="184" height="20" role="img" aria-label="Final del curso">Final del curso</canvas></h2>
+      <p id="progreso-final"></p>
+      <ul id="progreso-temas" class="progreso-temas"></ul>
+      <div class="acciones-final">
+        <button id="volver-temas">Volver a los temas</button>
+        <a class="boton primario" href="ejercicios.html">Ir al Taller de ejercicios</a>
+      </div>
+    </section>
+  </main>
+  <script src="js/comun/pixel.js"></script>
+  <script src="js/comun/progreso.js"></script>
+  <script src="js/comun/python.js"></script>
+  <script src="js/comun/editor.js"></script>
+  <script src="js/comun/sonido.js"></script>
+  <script src="js/comun/tablero.js"></script>
+  <script src="js/robot/mundo.js"></script>
+  <script src="js/mago/mundo.js"></script>
+  <script src="js/granja/mundo.js"></script>
+  <script src="js/curso/py/lexico.js"></script>
+  <script src="js/curso/py/sintaxis.js"></script>
+  <script src="js/curso/py/valores.js"></script>
+  <script src="js/curso/py/integradas.js"></script>
+  <script src="js/curso/py/modulos.js"></script>
+  <script src="js/curso/py/interprete.js"></script>
+  <script src="js/curso/temas/primeros.js"></script>
+  <script src="js/curso/temas/variables.js"></script>
+  <script src="js/curso/temas/condiciones.js"></script>
+  <script src="js/curso/temas/bucles.js"></script>
+  <script src="js/curso/temas/listas.js"></script>
+  <script src="js/curso/temas/funciones.js"></script>
+  <script src="js/curso/temas/formatos.js"></script>
+  <script src="js/curso/temas/textos.js"></script>
+  <script src="js/curso/temas/diccionarios.js"></script>
+  <script src="js/curso/temas/errores.js"></script>
+  <script src="js/curso/temas/entrada.js"></script>
+  <script src="js/curso/temas/proyecto.js"></script>
+  <script src="js/curso/progreso.js"></script>
+  <script src="js/curso/validar.js"></script>
+  <script src="js/curso/cursor.js"></script>
+  <script src="js/curso/mapa.js"></script>
+  <script src="js/curso/pantalla.js"></script>
+</body>
+</html>

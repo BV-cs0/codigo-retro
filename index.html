@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Código Retro</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="stylesheet" href="css/curso.css">
+  <link rel="stylesheet" href="css/bash.css">
+  <link rel="stylesheet" href="css/taller.css">
+  <link rel="stylesheet" href="css/terminal.css">
+</head>
+<body class="inicio">
+  <main class="contenedor">
+    <h1 class="logo"><canvas id="logo" width="162" height="22" role="img" aria-label="CÓDIGO RETRO">CÓDIGO RETRO</canvas></h1>
+    <section class="menu-seccion" aria-labelledby="aprende"><h2 id="aprende">Aprende</h2>
+    <div class="tarjetas" id="tarjetas-aprende">
+    <a class="tarjeta portada-curso" href="curso.html">
+      <div class="escena"><canvas data-cursor width="16" height="15" aria-hidden="true"></canvas></div>
+      <div class="ficha"><h2>Curso de Python — aprende paso a paso</h2><p class="resumen"><span id="total-curso">0 / 114 pasos</span></p></div>
+    </a>
+      <a class="tarjeta portada-bash" id="tarjeta-bash" href="bash.html">
+        <div class="escena"><canvas id="bash-menu" width="40" height="24" aria-hidden="true"></canvas></div>
+        <div class="ficha"><h2>Scripting con Bash — automatiza la terminal</h2><p class="resumen" id="total-bash">0 / 66 pasos</p></div>
+      </a>
+    </div>
+    </section>
+    <section class="menu-seccion" aria-labelledby="practica"><h2 id="practica">Practica</h2>
+    <div class="tarjetas" id="tarjetas-practica">
+      <a class="tarjeta tarjeta-taller" href="ejercicios.html">
+        <div class="ficha"><h2>Taller de ejercicios</h2><p class="resumen" id="resueltos-menu"></p></div>
+      </a>
+      <a class="tarjeta tarjeta-faro" href="terminal.html">
+        <div class="escena"><canvas id="lumen-menu" width="16" height="16" aria-hidden="true"></canvas></div>
+        <div class="ficha"><h2>Terminal Linux</h2><p>Aprende la terminal con Lumen en El Faro.</p><p class="resumen" id="total-faro">0 / 40 misiones</p></div>
+      </a>
+      <a class="tarjeta robot" href="robot.html">
+        <div class="escena"><canvas data-demo="robot" width="56" height="44" aria-hidden="true"></canvas></div>
+        <div class="ficha"><h2>Pico en la mina</h2><p>Guía a Pico por la mina.</p><p class="resumen">Fácil <span data-total="robot"></span></p></div>
+      </a>
+      <a class="tarjeta mago" href="mago.html">
+        <div class="escena"><canvas data-demo="mago" width="56" height="44" aria-hidden="true"></canvas></div>
+        <div class="ficha"><h2>El hechizo de Brasa</h2><p>Abre camino con hechizos.</p><p class="resumen">Media <span data-total="mago"></span></p></div>
+      </a>
+      <a class="tarjeta granja" href="granja.html">
+        <div class="escena"><canvas data-demo="granja" width="56" height="44" aria-hidden="true"></canvas></div>
+        <div class="ficha"><h2>Granja de Bina</h2><p>Organiza la granja con datos.</p><p class="resumen">Media <span data-total="granja"></span></p></div>
+      </a>
+    </div>
+    </section>
+    <footer class="pie-menu">
+      <canvas id="corazon" width="7" height="7" aria-hidden="true"></canvas>
+      <a href="creador.html">Sobre el creador</a>
+      <a href="apoya.html">Apoya al creador</a>
+    </footer>
+  </main>
+  <script src="js/comun/pixel.js"></script>
+  <script src="js/comun/progreso.js"></script>
+  <script src="js/curso/progreso.js"></script>
+  <script src="js/curso/bash-progreso.js"></script>
+  <script src="js/curso/cursor.js"></script>
+  <script src="js/ejercicios/progreso.js"></script>
+  <script src="js/terminal/progreso.js"></script>
+  <script src="js/terminal/sprites.js"></script>
+  <script src="js/menu.js"></script>
+</body>
+</html>

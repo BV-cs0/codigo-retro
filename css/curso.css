@@ -1,0 +1,82 @@
+.portada-curso { --marco: #60916f; --tema: #b5f7b8; --escena: #243c38; display: grid; grid-template-columns: minmax(6rem, 22%) minmax(0, 1fr); }
+.portada-curso .escena { min-height: 110px; border: 0; border-right: 3px solid var(--marco); }
+.portada-curso .escena canvas { width: min(78%, 88px); }
+.practica { margin: 1.5rem 0 .6rem; }
+.curso { --acento: #b5f7b8; }
+#cartuchos, .columnas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .85rem; }
+#cartuchos { padding-bottom: 2rem; }
+.cartucho { text-align: left; display: grid; align-content: start; gap: .6rem; padding: 1rem; }
+.cartucho strong, #posicion, #etiqueta { color: var(--acento); }
+.cartucho progress { width: 100%; accent-color: var(--acento); }
+.cartucho small { color: var(--suave); }
+.columnas { grid-template-columns: minmax(0, .9fr) minmax(0, 1.25fr) minmax(0, .85fr); align-items: start; }
+.curso .panel { overflow-wrap: anywhere; }
+#posicion { margin-top: .8rem; }
+#titulo-paso { margin-bottom: .8rem; }
+.guia { display: flex; align-items: flex-start; gap: .5rem; }
+.guia canvas { width: 47px; height: auto; margin-top: .5rem; }
+.bocadillo { flex: 1; min-width: 0; border-left: 3px solid var(--acento); padding: .55rem; background: var(--fondo); }
+.bocadillo p + p { margin-top: .7rem; }
+.curso code { background: #14121d; color: #e1f5bd; font-family: inherit; }
+.curso :is(aside, #reto, #prediccion, #estado, #resultado h3, #mapa, #respuesta) { margin-top: .7rem; }
+#etiqueta { font-size: .8rem; margin-bottom: .55rem; }
+#recuerda { padding: .5rem .6rem; border: 2px solid var(--borde); background: var(--fondo); }
+#recuerda h3 { color: var(--acento); font-size: .9rem; }
+#opciones { display: grid; gap: .4rem; margin-top: .5rem; }
+#opciones button { white-space: pre-wrap; text-align: left; }
+.curso .editor { height: 290px; }
+.curso .cadena { color: #b5f7b8; }
+.terminal { background: #0b110d; color: #b2f6bc; padding: .65rem; min-height: 5rem; max-height: 16rem; overflow: auto; }
+.terminal pre { display: inline; font: inherit; white-space: pre-wrap; }
+.terminal pre::after { content: '▌'; animation: parpadeo 1.15s steps(1) infinite; }
+@keyframes parpadeo { 50% { opacity: 0; } }
+#error-consola { color: #ffa9b6; white-space: pre-wrap; }
+#estado:empty, #error-consola:empty { display: none; }
+#resultado table { width: 100%; border-collapse: collapse; text-align: left; table-layout: fixed; font-size: .87rem; }
+#resultado :is(td, th) { border-bottom: 1px solid var(--borde); padding: .3rem; }
+#llamadas { padding-inline-start: 1.6rem; margin-block: .3rem; }
+.navegacion, #puntos { display: flex; align-items: center; flex-wrap: wrap; gap: .35rem; }
+.navegacion { margin-block: 1rem; }
+#puntos button { min-width: 2rem; min-height: 2rem; padding: .15rem .3rem; border-radius: 50%; }
+#puntos [aria-current] { border-color: var(--acento); }
+#puntos .completo { background: #27513d; }
+#resumen { grid-column: 2 / -1; }
+#chuleta dt { margin-top: .6rem; white-space: pre-wrap; }
+#chuleta dd { margin: .2rem 0 .65rem; color: var(--suave); }
+@media (max-width: 900px) {
+  .columnas { grid-template-columns: minmax(0, 1fr); }
+  #resumen { grid-column: auto; }
+  #cartuchos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 550px) {
+  #cartuchos { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { .terminal pre::after { animation: none; } }
+.cartucho.dorado {
+  border-color: #ffda79;
+  background: #392c1c;
+}
+.cartucho.dorado strong { color: #ffda79; }
+.terminal:has(#entrada-terminal:not([hidden])) #salida::after { content: none; }
+#entrada-terminal:not([hidden]) { display: inline; }
+#entrada {
+  width: min(12ch, 100%);
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: #ffda79;
+  font: inherit;
+  caret-color: currentColor;
+}
+.eco-terminal { color: #ffda79; }
+#error-original { color: #b8b4be; white-space: pre-wrap; }
+#casos { table-layout: fixed; overflow-wrap: anywhere; }
+#casos mark { display: block; white-space: pre-wrap; background: #ffda79; color: #201923; }
+#codigo-final, #codigo-jugador { max-width: 100%; overflow: auto; }
+#final-curso { text-align: center; }
+#final-curso canvas { image-rendering: pixelated; }
+#final-curso [data-cursor] { width: 144px; max-width: 100%; }
+#letras-final { width: min(100%, 552px); }
+#progreso-temas { list-style: none; padding: 0; margin: 1rem auto; text-align: left; max-width: 890px; }
+#progreso-temas li { background: var(--fondo); padding: .85rem; }
+.acciones-final { display: flex; justify-content: center; flex-wrap: wrap; gap: .6rem; }

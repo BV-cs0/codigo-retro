@@ -1,0 +1,54 @@
+body.faro { background: #131222; color: #eae6ff; font-family: "Courier New", monospace; font-weight: bold; }
+.faro-marco { margin: auto; padding: clamp(12px, 2vw, 28px); max-width: 1680px; }
+.faro-cabecera { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 20px; }
+.faro-cabecera h1 { margin: 0 auto 0 0; color: #ffdf90; }
+.faro a { color: #ffdf90; }
+.faro :is(button,select) { font: inherit; color: #f0e9ff; background: #2e2748; border: 2px solid #8170ad; padding: 6px 9px; cursor: pointer; }
+.faro :is(button,select,a):focus-visible { outline: 2px solid #ffdf90; outline-offset: 3px; }
+.faro button:disabled { cursor: default; opacity: .6; }
+.guardia { display: grid; grid-template-columns: minmax(190px, .85fr) minmax(0, 2.65fr) minmax(170px, .75fr); gap: 14px; align-items: start; }
+.faro-panel { background: #201a33; border: 2px solid #6c5b90; padding: 14px; min-width: 0; overflow-wrap: anywhere; }
+.faro-panel h2, .faro-panel h3 { margin: .5em 0; }
+.faro-indice { color: #c6b6e8; margin: 0; }
+#lumen { width: 64px; height: 64px; image-rendering: pixelated; }
+#objetivos { list-style: none; padding: 0; }
+#objetivos li { margin-bottom: .55em; }
+#objetivos .hecho { color: #99efae; }
+.acciones-mision { display: flex; flex-wrap: wrap; gap: 8px; }
+#texto-pista { color: #ffdf90; }
+.crt { --luz: #9dffac; color: var(--luz); background: #090b0a; border: 4px solid #48405b; border-radius: 9px; min-width: 0; overflow: hidden; }
+.crt[data-fosforo="ambar"] { --luz: #ffd18d; }
+.crt[data-fosforo="blanco"] { --luz: #f0f3ec; }
+.pantalla-crt { min-height: 360px; height: calc(100vh - 125px); overflow: auto; padding: 14px; white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 8;
+  background-image: repeating-linear-gradient(transparent 0 3px, #56836b0d 3px 4px); text-shadow: 0 0 7px color-mix(in srgb, var(--luz) 32%, transparent); }
+.orden { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 .55ch; }
+.orden input { flex: 1 1 14ch; min-width: 0; color: inherit; background: transparent; border: 0; font: inherit; padding: 0; caret-color: var(--luz); }
+.orden input:focus { outline: 0; }
+.crt:focus-within { border-color: #a091b6; }
+.usuario { color: #90f4a1; }
+.ruta, .carpeta { color: #88b8ff; }
+.guia { color: #aaa9a6; }
+.error { color: #ffb9aa; }
+.pestanas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.pestanas [aria-selected="true"] { color: #ffdf90; border-color: #ffdf90; }
+#chuleta, #mapa { max-height: calc(100vh - 190px); overflow: auto; }
+#chuleta dt { color: #ffdf90; margin-top: .6em; }
+#chuleta dd { margin: 0 0 .6em; }
+#mapa ul { list-style: none; margin: 0; padding-inline-start: 1ch; }
+#mapa [aria-current] { color: #ffdf90; background: #372f51; }
+.lista-capitulos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); gap: 14px; }
+.lista-capitulos ol { margin: 0; padding-left: 22px; }
+.lista-capitulos li { margin: .45em 0; }
+#victoria { color: #eae6ff; width: min(480px, calc(100% - 32px)); }
+#victoria::backdrop { background: #080610c9; }
+#torre { width: min(100%, 288px); image-rendering: pixelated; background: #151b36; }
+.tarjeta-faro .escena { background: #151b36; }
+.tarjeta-faro canvas { width: 88px; height: 88px; image-rendering: pixelated; }
+@media (max-width: 980px) {
+  .guardia { grid-template-columns: minmax(170px, .85fr) minmax(0, 2fr); }
+  .faro-ayuda { grid-column: 1 / -1; }
+}
+@media (max-width: 650px) {
+  .guardia { grid-template-columns: minmax(0, 1fr); }
+  .pantalla-crt { height: 54vh; min-height: 200px; }
+}

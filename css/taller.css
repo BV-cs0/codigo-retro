@@ -1,0 +1,43 @@
+.filtros { margin: 1rem 0; }
+#barras-taller, #fichas-taller, .formas-apoyo, .progreso-temas {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: .75rem;
+}
+#barras-taller label, .progreso-temas li { display: grid; gap: .35rem; }
+#barras-taller progress, .progreso-temas progress { width: 100%; accent-color: var(--acento); }
+#fichas-taller { margin-top: 1rem; }
+#fichas-taller .autonomo { border-color: #75d791; }
+#fichas-taller .ayudado { border-color: #f3bf66; }
+#fichas-taller .ayudado span:last-child { color: #f3bf66; }
+#etiqueta-ejercicio, #ayuda, #ayuda-orden { color: var(--suave); }
+#ejemplo, #codigo-alternativo { white-space: pre-wrap; overflow-wrap: anywhere; }
+#veredicto { margin: 1rem 0; padding: .75rem; background: var(--fondo); border: 2px solid currentColor; }
+#veredicto ul { padding-inline-start: 1.25rem; }
+#veredicto li { margin-block: .4rem; overflow-wrap: anywhere; }
+.correcto { color: #9bf9af; }
+.incorrecto { color: #ffaeae; }
+#codigo-alternativo { color: var(--tinta); }
+#lineas-orden { padding-inline-start: 1.85rem; }
+#lineas-orden li { padding: .5rem; border-bottom: 1px solid var(--borde); }
+#lineas-orden code { display: block; white-space: pre-wrap; overflow-wrap: anywhere; }
+#lineas-orden .descartada code { text-decoration: line-through; color: var(--suave); }
+.menu-seccion { margin-top: 1.3rem; }
+.menu-seccion > h2 { margin-bottom: .75rem; }
+.menu-seccion .tarjetas { margin-top: .75rem; }
+.tarjeta.proximamente { opacity: .68; cursor: default; min-height: 5rem; }
+.sello { display: inline-block; color: #f3bf66; border: 1px solid currentColor; padding: .15rem .4rem; }
+.tarjeta-taller { --tema: #a6f6b6; }
+.pie-menu { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: .65rem 1rem; }
+.pie-menu canvas, #avatar-creador { image-rendering: pixelated; }
+.pie-menu canvas { width: 21px; height: 21px; }
+.pagina-creador { max-width: 850px; }
+#avatar-creador { width: 128px; height: 128px; background: #27203d; }
+.formas-apoyo { margin-block: 1rem; }
+.apoyo-gratis li { margin-block: .55rem; }
+
+.tarjetas-previstas { display: contents; }
+.tarjeta.proximamente { --marco: #54476a; --tema: var(--suave); }
+.tarjeta.proximamente:hover { transform: none; border-color: var(--marco); }
+.tarjeta-taller { --marco: #60916f; }
+.formas-apoyo .tarjeta, .tarjeta.proximamente, .tarjeta-taller { display: flex; }
+.pie-menu a { text-decoration: underline; }
+#titulo-ejercicio { margin-bottom: .8rem; }
