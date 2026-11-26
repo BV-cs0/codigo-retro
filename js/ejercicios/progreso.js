@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const { Idioma } = typeof module !== 'undefined' ? require('../comun/idioma') : window.CR;
   const clave = 'codigo-retro-taller';
   let memoria = {}, enMemoria = false;
   function leer() {
@@ -7,10 +8,20 @@
     try { return JSON.parse(localStorage.getItem(clave)) || memoria; }
     catch { return memoria; }
   }
-  function estado(id) { return leer()[id] || {}; }
+  function estado(id) {
+    const datos = leer()[id] || {};
+    if (Idioma.actual() !== 'en') return datos;
+    return { resuelto: datos.resuelto, fallos: datos.fallos, ...datos.en };
+  }
   function guardar(id, cambios) {
     const datos = leer();
-    datos[id] = { ...datos[id], ...cambios };
+    if (Idioma.actual() === 'en') {
+      const { codigo, lineas, ...progreso } = cambios;
+      const en = { ...datos[id]?.en };
+      if (codigo !== undefined) en.codigo = codigo;
+      if (lineas !== undefined) en.lineas = lineas;
+      datos[id] = { ...datos[id], ...progreso, en };
+    } else datos[id] = { ...datos[id], ...cambios };
     memoria = datos;
     try { localStorage.setItem(clave, JSON.stringify(datos)); }
     catch { enMemoria = true; }

@@ -7,7 +7,7 @@
     try {
       const guardado = JSON.parse(localStorage.getItem(CLAVE) || '{}') || {};
       for (const id of Array.isArray(guardado.hechas) ? guardado.hechas : []) {
-        if (/^[1-8]-[1-5]$/.test(id)) hechas.add(id);
+        if (/^(?:[1-9]|1[0-2])-[1-5]$/.test(id)) hechas.add(id);
       }
       estado = { ...estado, ...guardado, hechas: [...hechas] };
     } catch {}

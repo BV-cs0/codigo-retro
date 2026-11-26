@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const traducir = typeof module !== 'undefined' ? require('./idioma').t : globalThis.CR.t;
   const $ = id => document.getElementById(id);
   const estrella = cantidad => '★'.repeat(cantidad) + '☆'.repeat(3 - cantidad);
   let Motor, Python, Lecciones, Progreso, Pixel, Editor, Sonido;
@@ -13,7 +14,8 @@
     editor = Editor.crear({
       entrada: $('codigo'), espejo: $('espejo'), numeros: $('numeros'),
       contador: $('contador'), error: $('error')
-    }, texto => Progreso.guardarCodigo(demo, nivel.id, texto));
+    }, texto => Progreso.guardarCodigo(demo, nivel.id,
+      window.CR.DemoIdioma.adaptarBorrador(texto, 'es', nivel.ordenes)));
     conectarControles();
     $('variables').hidden = demo !== 'granja';
     sonido();
@@ -30,12 +32,12 @@
 
   function mostrarMapa() {
     dibujar(ctx, mundo.estado);
-    $('variante').textContent = 'Mapa ' + (variante + 1) + ' de ' + nivel.variantes.length;
+    $('variante').textContent = traducir("comun.mapa") + (variante + 1) + traducir("comun.de") + nivel.variantes.length;
     if (demo === 'granja') {
       const variables = Object.entries(ejecucion?.variables || {});
       $('datos').textContent = variables.length
         ? variables.map(([n, v]) => n + ' = ' + (typeof v === 'boolean' ? (v ? 'True' : 'False') : v)).join(' · ')
-        : 'Todavía no hay variables.';
+        : traducir("comun.todavia_no_hay_variables");
     }
   }
 
@@ -56,11 +58,11 @@
     mundo = crear(nivel.variantes[0]);
     editor.destacar(0);
     mostrarMapa();
-    mensaje('Mapa listo.');
+    mensaje(traducir("comun.mapa_listo"));
   }
 
   function libreta() {
-    $('libreta-titulo').textContent = demo === 'mago' ? 'Libro de hechizos' : 'Libreta';
+    $('libreta-titulo').textContent = demo === 'mago' ? traducir("comun.libro_de_hechizos") : traducir("comun.libreta");
     $('ordenes').replaceChildren();
     for (const orden of nivel.ordenes) {
       const nombre = document.createElement('dt');
@@ -76,7 +78,7 @@
     detener();
     $('partida').hidden = true;
     $('selector').hidden = false;
-    $('encabezado-nivel').textContent = 'Selección de nivel';
+    $('encabezado-nivel').textContent = traducir("comun.seleccion_de_nivel");
     $('niveles').replaceChildren();
     for (const ficha of niveles) {
       const boton = document.createElement('button');
@@ -92,15 +94,16 @@
     nivel = ficha;
     $('selector').hidden = true;
     $('partida').hidden = false;
-    $('encabezado-nivel').textContent = 'Nivel ' + ficha.id + ' de 5 · ' + ficha.etiqueta;
+    $('encabezado-nivel').textContent = traducir("comun.nivel") + ficha.id + traducir("comun.de_5") + ficha.etiqueta;
     $('titulo-nivel').textContent = ficha.titulo;
     $('estrellas').textContent = estrella(Progreso.estrellas(demo, ficha.id));
     $('mapas-info').textContent = ficha.variantes.length > 1
-      ? 'Tu programa tiene que funcionar en los ' + ficha.variantes.length + ' mapas.' : '';
-    editor.configurar(ficha, Progreso.codigo(demo, ficha.id) ?? ficha.codigoInicial ?? '');
+      ? traducir("comun.tu_programa_tiene_que_funcionar") + ficha.variantes.length + traducir("comun.mapas") : '';
+    const guardado = window.CR.DemoIdioma.adaptarBorrador(Progreso.codigo(demo, ficha.id), 'en', ficha.ordenes);
+    editor.configurar(ficha, guardado ?? ficha.codigoInicial ?? '');
     libreta();
     reiniciar();
-    dialogo(ficha.titulo, [...ficha.intro, $('mapas-info').textContent].filter(Boolean), [['¡Vamos!', () => $('codigo').focus()]]);
+    dialogo(ficha.titulo, [...ficha.intro, $('mapas-info').textContent].filter(Boolean), [[traducir("comun.vamos"), () => $('codigo').focus()]]);
   }
 
   function dialogo(titulo, frases, acciones) {
@@ -133,19 +136,19 @@
   function preparar() {
     const texto = editor.texto();
     const cantidad = Python.contarLineas(texto);
-    if (!cantidad) return fallo('Escribe alguna orden antes de ejecutar.');
-    if (nivel.maxLineas && cantidad > nivel.maxLineas) return fallo('Este nivel admite ' + nivel.maxLineas + ' líneas.');
+    if (!cantidad) return fallo(traducir("comun.escribe_alguna_orden_antes_de"));
+    if (nivel.maxLineas && cantidad > nivel.maxLineas) return fallo(traducir("comun.este_nivel_admite") + nivel.maxLineas + traducir("comun.lineas_2"));
     try {
       programa = Python.traducir(texto, Lecciones.opciones(nivel.ordenes));
     } catch (error) {
       return fallo(error.message, error.linea);
     }
     if (nivel.requiereConcepto && !Motor.usaConcepto(programa, nivel.concepto)) {
-      return fallo('Define una función con def y llámala para repetir la rutina.');
+      return fallo(traducir("comun.define_una_funcion_con_def"));
     }
     variante = 0;
     editor.destacar(0);
-    mensaje('Ejecutando el programa.');
+    mensaje(traducir("comun.ejecutando_el_programa"));
     nuevaVariante();
     return true;
   }
@@ -163,14 +166,16 @@
     if (paso.error) return fallo(paso.error, paso.instr?.linea);
     if (paso.instr) {
       editor.destacar(paso.instr.linea);
-      Sonido.tocar(['picar', 'lanzar_fuego', 'abrir', 'cosechar', 'vender'].includes(paso.instr.nombre) ? 'recoger' : 'paso');
+      const nombre = paso.instr.nombre;
+      const orden = window.CR.DemoIdioma.espanol[nombre] ?? nombre;
+      Sonido.tocar(['picar', 'lanzar_fuego', 'abrir', 'cosechar', 'vender'].includes(orden) ? 'recoger' : 'paso');
     }
     if (paso.hecho) {
-      if (!mundo.ganado()) return fallo('El programa terminó y el objetivo sigue pendiente en el mapa ' + (variante + 1) + '.');
+      if (!mundo.ganado()) return fallo(traducir("comun.el_programa_termino_y_el") + (variante + 1) + '.');
       if (variante + 1 === nivel.variantes.length) return victoria();
       variante++;
       nuevaVariante();
-      mensaje('Objetivo cumplido. Probamos el mapa ' + (variante + 1) + '.');
+      mensaje(traducir("comun.objetivo_cumplido_probamos_el_mapa") + (variante + 1) + '.');
     }
     if (automatico) temporizador = setTimeout(avanzar, Number($('velocidad').value));
   }
@@ -182,13 +187,13 @@
     Progreso.guardarEstrellas(demo, nivel.id, cantidad);
     $('estrellas').textContent = estrella(Progreso.estrellas(demo, nivel.id));
     Sonido.tocar('victoria');
-    mensaje('Objetivo cumplido en todos los mapas.');
+    mensaje(traducir("comun.objetivo_cumplido_en_todos_los"));
     const siguiente = niveles[nivel.id];
-    const frases = [estrella(cantidad), concepto ? nivel.logro : 'Objetivo cumplido. Prueba a usar el concepto de este nivel para mejorar tu marca.', nivel.pythonReal];
-    if (!siguiente) frases.push('Estrellas de la demo: ' + Progreso.total(demo) + ' / 15.');
-    dialogo(siguiente ? 'Nivel superado' : 'Final de la demo', frases, [
-      siguiente ? ['Siguiente nivel', () => abrir(siguiente)] : ['Ver niveles', selector],
-      ['Volver a intentar', () => { reiniciar(); $('codigo').focus(); }]
+    const frases = [estrella(cantidad), concepto ? nivel.logro : traducir("comun.objetivo_cumplido_prueba_a_usar"), nivel.pythonReal];
+    if (!siguiente) frases.push(traducir("comun.estrellas_de_la_demo") + Progreso.total(demo) + ' / 15.');
+    dialogo(siguiente ? traducir("comun.nivel_superado") : traducir("comun.final_de_la_demo"), frases, [
+      siguiente ? [traducir("comun.siguiente_nivel"), () => abrir(siguiente)] : [traducir("comun.ver_niveles"), selector],
+      [traducir("comun.volver_a_intentar"), () => { reiniciar(); $('codigo').focus(); }]
     ]);
   }
 
@@ -203,13 +208,13 @@
 
   function sonido() {
     const silencio = Progreso.silencio();
-    $('sonido').textContent = silencio ? 'Activar sonido' : 'Silenciar';
+    $('sonido').textContent = silencio ? traducir("comun.activar_sonido") : traducir("comun.silenciar");
   }
 
   function conectarControles() {
     $('ejecutar').addEventListener('click', () => correr(true));
     $('paso').addEventListener('click', () => correr(false));
-    $('parar').addEventListener('click', () => { detener(); mensaje('Ejecución detenida.'); $('ejecutar').focus(); });
+    $('parar').addEventListener('click', () => { detener(); mensaje(traducir("comun.ejecucion_detenida")); $('ejecutar').focus(); });
     $('reiniciar').addEventListener('click', reiniciar);
     $('pista').addEventListener('click', () => mensaje(nivel.pista));
     $('copiar').addEventListener('click', () => editor.copiar(nivel.ejemplo));

@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const traducir = typeof module !== 'undefined' ? require('../../comun/idioma').t : globalThis.CR.t;
   const [S, V, I] = typeof module !== 'undefined' ? [require('./sintaxis'), require('./valores'), require('./integradas')] :
     [window.CR.PySintaxis, window.CR.PyValores, window.CR.PyIntegradas];
   const M = typeof module !== 'undefined' ? require('./modulos') : window.CR.PyModulos;
@@ -33,7 +34,7 @@
   class Programa {
     constructor(codigo, opciones) {
       this.global = opciones.global || new Map();
-      this.pila = [{ valores: this.global, etiqueta: 'programa principal' }];
+      this.pila = [{ valores: this.global, etiqueta: traducir("curso.programa_principal") }];
       this.salida = '';
       this.lineas = 0;
       this.longitudLinea = 0;
@@ -52,11 +53,11 @@
     escribir(texto) {
       const filas = texto.split('\n');
       this.longitudLinea += filas[0].length;
-      if (this.longitudLinea > 100000) S.fallo('OverflowError', this.linea, 'Una línea de consola supera los 100 000 caracteres.');
+      if (this.longitudLinea > 100000) S.fallo('OverflowError', this.linea, traducir("curso.una_linea_de_consola_supera"));
       if (filas.length > 1) this.longitudLinea = filas.at(-1).length;
       this.lineas += filas.length - 1;
       if (this.lineas > 500 || (this.lineas === 500 && this.longitudLinea)) {
-        S.fallo('RuntimeError', this.linea, 'La consola admite hasta 500 líneas.');
+        S.fallo('RuntimeError', this.linea, traducir("curso.la_consola_admite_hasta_500"));
       }
       this.salida += texto;
     }
@@ -66,7 +67,7 @@
     }
     *marca(linea) {
       if (++this.instrucciones > 20000) throw { tipo: 'RuntimeError', linea, limite: true,
-        mensaje: 'Tu programa no termina nunca. ¿Hay un while cuya condición nunca se vuelve falsa?' };
+        mensaje: traducir("curso.tu_programa_no_termina_nunca") };
       this.linea = linea;
       yield linea;
     }
@@ -75,7 +76,7 @@
         try { this.final = this.motor.next(entrada); }
         catch (err) {
           this.fallo = err.tipo ? err : { tipo: err instanceof RangeError ? 'RecursionError' : 'RuntimeError',
-            linea: this.linea || 1, mensaje: err instanceof RangeError ? 'Demasiadas llamadas una dentro de otra.' : err.message };
+            linea: this.linea || 1, mensaje: err instanceof RangeError ? traducir("curso.demasiadas_llamadas_una_dentro_de") : err.message };
           this.final = { done: true };
         }
       }
@@ -112,12 +113,12 @@
       for (let marco = this.marco; marco; marco = marco.padre) {
         if (marco.valores.has(nombre)) return marco.valores.get(nombre);
         if (marco.locales?.has(nombre)) {
-          e(marco === this.marco ? 'UnboundLocalError' : 'NameError', nombre + ' todavía no tiene un valor local.');
+          e(marco === this.marco ? 'UnboundLocalError' : 'NameError', nombre + traducir("curso.todavia_no_tiene_un_valor"));
         }
       }
       if (this.global.has(nombre)) return this.global.get(nombre);
       if (this.integradas.has(nombre)) return this.integradas.get(nombre);
-      e('NameError', '«' + nombre + '» no existe todavía. ¿Lo has escrito bien? ¿Lo creaste antes de usarlo?' +
+      e('NameError', '«' + nombre + traducir("curso.no_existe_todavia_lo_has") +
         I.cercana(nombre, new Set([...this.marco.valores.keys(), ...this.global.keys(), ...this.integradas.keys()])),
         "name '" + nombre + "' is not defined");
     }
@@ -129,16 +130,16 @@
           borrar: () => V.obtener(base, clave, e, undefined, true) } : V.obtener(base, clave, e);
       }
       const a = typeof base === 'string' ? [...base] : base?.tipo === 'tuple' ? base.items : base;
-      if (!Array.isArray(a)) e('TypeError', 'Este valor no tiene posiciones.');
-      if (escritura && a !== base) e('TypeError', 'Este valor no permite modificar sus posiciones.');
+      if (!Array.isArray(a)) e('TypeError', traducir("curso.este_valor_no_tiene_posiciones"));
+      if (escritura && a !== base) e('TypeError', traducir("curso.este_valor_no_permite_modificar"));
       if (n.tipo === 'corte') {
         const fin = n.fin ? yield* this.expr(n.fin, e) : null;
         const paso = n.paso ? yield* this.expr(n.paso, e) : null;
         const items = cortar(a, clave, fin, paso, e);
         return a === base ? items : base?.tipo === 'tuple' ? V.tupla(items) : items.join('');
       }
-      const nombre = typeof base === 'string' ? 'El texto' : base?.tipo === 'tuple' ? 'La tupla' : 'La lista';
-      const i = V.posicion(V.entero(clave, e), a.length, e, nombre);
+      const tipo = typeof base === 'string' ? 'string' : base?.tipo === 'tuple' ? 'tuple' : 'list';
+      const i = V.posicion(V.entero(clave, e), a.length, e, tipo);
       return escritura ? { leer: () => a[i], poner: v => { a[i] = v; }, borrar: () => a.splice(i, 1) } : a[i];
     }
     *operacion(n, e) {
@@ -161,7 +162,7 @@
         case 'unario': {
           const v = yield* this.expr(n.expr, e);
           if (n.op === 'not') return !V.verdad(v);
-          if (!V.numerico(v)) e('TypeError', 'El signo necesita un número.');
+          if (!V.numerico(v)) e('TypeError', traducir("curso.el_signo_necesita_un_numero"));
           const num = n.op === '-' ? -V.num(v) : V.num(v);
           return V.tipo(v) === 'float' ? V.float(num) : num || 0;
         }
@@ -198,10 +199,10 @@
       for (const arg of n.args) {
         const v = yield* this.expr(arg.valor, e);
         if (arg.nombre) {
-          if (Object.hasOwn(kw, arg.nombre)) e('SyntaxError', 'Ese argumento aparece dos veces.');
+          if (Object.hasOwn(kw, arg.nombre)) e('SyntaxError', traducir("curso.ese_argumento_aparece_dos_veces"));
           kw[arg.nombre] = v;
         } else {
-          if (Object.keys(kw).length) e('SyntaxError', 'Pon los argumentos posicionales primero.');
+          if (Object.keys(kw).length) e('SyntaxError', traducir("curso.pon_los_argumentos_posicionales_primero"));
           args.push(v);
         }
       }
@@ -209,7 +210,7 @@
     }
     *ordenar(f, args, kw, e) {
       if (args.length !== (f.base ? 0 : 1) || Object.keys(kw).some(k => k !== 'key' && k !== 'reverse')) {
-        e('TypeError', 'Revisa los argumentos de ' + f.nombre + '().');
+        e('TypeError', traducir("curso.revisa_los_argumentos_de") + f.nombre + '().');
       }
       const { key = null, reverse = false } = kw;
       const sentido = V.verdad(reverse) ? -1 : 1;
@@ -237,8 +238,8 @@
       if (f?.excepcion) return crearExcepcion(f.nombre, args, e);
       if (f?.tipo === 'clase' && f.nombre !== 'NoneType') return this.integradas.get(f.nombre)?.fn?.(args, kw, e) ?? null;
       if (f?.tipo === 'integrada') return f.fn(args, kw, e);
-      if (f?.tipo !== 'funcion') e('TypeError', 'Este valor no es una función.');
-      if (this.pila.length > 100) e('RecursionError', 'Demasiadas llamadas una dentro de otra.');
+      if (f?.tipo !== 'funcion') e('TypeError', traducir("curso.este_valor_no_es_una"));
+      if (this.pila.length > 100) e('RecursionError', traducir("curso.demasiadas_llamadas_una_dentro_de"));
       const valores = this.argumentos(f, args, kw, e);
       const etiqueta = f.nombre + '(' + [...valores].map(([k, v]) => k + '=' + visible(v)).join(', ') + ')';
       this.pila.push({ valores, etiqueta, locales: f.locales, padre: f.padre });
@@ -246,18 +247,18 @@
       finally { this.pila.pop(); }
     }
     *entrada(args, kw, e) {
-      if (args.length > 1 || Object.keys(kw).length) e('TypeError', 'input() admite un argumento posicional.');
+      if (args.length > 1 || Object.keys(kw).length) e('TypeError', traducir("curso.input_admite_un_argumento_posicional"));
       if (args.length) this.escribir(V.str(args[0], e));
       if (this.entradas === undefined) return V.limite(String(yield { esperandoEntrada: true }), e);
-      if (this.indiceEntrada >= this.entradas.length) e('EOFError', 'El programa pidió más datos de los previstos', 'EOF when reading a line');
+      if (this.indiceEntrada >= this.entradas.length) e('EOFError', traducir("curso.el_programa_pidio_mas_datos"), 'EOF when reading a line');
       const texto = V.limite(String(this.entradas[this.indiceEntrada++]), e);
       yield { eco: texto };
       return texto;
     }
     argumentos(f, args, kw, e) {
       const valores = new Map();
-      const invalido = original => e('TypeError', f.nombre + '() necesita ' + f.params.length +
-        (f.params.length === 1 ? ' argumento' : ' argumentos') + ' (' + f.params.map(p => p.nombre).join(', ') + ') y le has dado ' +
+      const invalido = original => e('TypeError', f.nombre + traducir("curso.necesita") + f.params.length +
+        (f.params.length === 1 ? traducir("curso.argumento") : traducir("curso.argumentos")) + ' (' + f.params.map(p => p.nombre).join(', ') + traducir("curso.y_le_has_dado") +
         (args.length + Object.keys(kw).length) + '.', original);
       if (args.length > f.params.length || Object.keys(kw).some(k => !f.params.some(p => p.nombre === k))) invalido();
       f.params.forEach(({ nombre }, i) => {
@@ -284,7 +285,7 @@
         if (Array.isArray(anterior) && op === '+=') {
           const extra = [];
           for (const v of V.iterable(otro, e)) {
-            if (anterior.length + extra.length >= 10000) e('OverflowError', 'La lista supera los 10 000 elementos.');
+            if (anterior.length + extra.length >= 10000) e('OverflowError', traducir("curso.la_lista_supera_los_10"));
             extra.push(v);
           }
           anterior.push(...extra);
@@ -307,11 +308,11 @@
         const it = V.iterable(valor, e);
         const valores = [];
         for (const item of it) {
-          if (valores.length === d.items.length) e('ValueError', 'Sobran valores al desempaquetar.',
+          if (valores.length === d.items.length) e('ValueError', traducir("curso.sobran_valores_al_desempaquetar"),
             'too many values to unpack (expected ' + d.items.length + ')');
           valores.push(item);
         }
-        if (valores.length !== d.items.length) e('ValueError', 'Faltan valores al desempaquetar.',
+        if (valores.length !== d.items.length) e('ValueError', traducir("curso.faltan_valores_al_desempaquetar"),
           'not enough values to unpack (expected ' + d.items.length + ', got ' + valores.length + ')');
         for (const [i, item] of d.items.entries()) yield* this.guardar(item, valores[i], e);
       }
@@ -347,10 +348,10 @@
       for (const { nombre, alias } of s.nombres) {
         const modulo = this.modulos.get(s.desde || nombre);
         if (!modulo) {
-          const mensaje = 'Este curso solo incluye `math` y `random`. En Python real hay muchos más.';
+          const mensaje = traducir("curso.este_curso_solo_incluye_math");
           e('ModuleNotFoundError', mensaje);
         }
-        if (s.desde && !modulo.attrs.has(nombre)) e('ImportError', 'El módulo no incluye ' + nombre + '.');
+        if (s.desde && !modulo.attrs.has(nombre)) e('ImportError', traducir("curso.el_modulo_no_incluye") + nombre + '.');
         this.marco.valores.set(alias, s.desde ? modulo.attrs.get(nombre) : modulo);
       }
     }
@@ -407,11 +408,11 @@
     *lanzar(s, e) {
       if (!s.expr) {
         if (this.excepciones.length) throw this.excepciones.at(-1);
-        e('RuntimeError', 'No hay ningún error que volver a lanzar.', 'No active exception to reraise');
+        e('RuntimeError', traducir("curso.no_hay_ningun_error_que"), 'No active exception to reraise');
       }
       let valor = yield* this.expr(s.expr, e);
       if (valor?.excepcion) valor = crearExcepcion(valor.nombre, [], e);
-      if (valor?.tipo !== 'excepcion') e('TypeError', 'Solo puedes lanzar una excepción.', 'exceptions must derive from BaseException');
+      if (valor?.tipo !== 'excepcion') e('TypeError', traducir("curso.solo_puedes_lanzar_una_excepcion"), 'exceptions must derive from BaseException');
       throw { ...valor.error, linea: s.linea, args: valor.args };
     }
     *bloque(cuerpo) {
@@ -428,7 +429,7 @@
           case 'import': this.importar(s, e); break;
           case 'del':
             if (s.expr?.tipo === 'indice') (yield* this.referencia(s.expr, e, true)).borrar();
-            else e('SyntaxError', 'Indica la posición o clave que quieres borrar.');
+            else e('SyntaxError', traducir("curso.indica_la_posicion_o_clave"));
             break;
           case 'while': case 'for': resultado = yield* this.bucle(s, e); break;
           case 'def': {
@@ -447,7 +448,7 @@
   }
   function cortar(items, inicio, fin, paso, e) {
     const salto = paso === null ? 1 : V.entero(paso, e);
-    if (!salto) e('ValueError', 'El paso no puede ser cero.', 'slice step cannot be zero');
+    if (!salto) e('ValueError', traducir("curso.el_paso_no_puede_ser"), 'slice step cannot be zero');
     const n = items.length, inverso = salto < 0;
     const ajustar = (x, defecto) => {
       if (x === null) return defecto;
@@ -466,7 +467,7 @@
   }
   function coincide(clase, error, e) {
     if (clase?.tipo === 'tuple') return clase.items.some(c => coincide(c, error, e));
-    if (!clase?.excepcion) e('TypeError', 'Indica una clase de excepción.',
+    if (!clase?.excepcion) e('TypeError', traducir("curso.indica_una_clase_de_excepcion"),
       'catching classes that do not inherit from BaseException is not allowed');
     return clase.nombre === 'Exception' || clase.nombre === error.tipo ||
       clase.nombre === 'NameError' && error.tipo === 'UnboundLocalError';

@@ -1,6 +1,7 @@
 (function () {
   'use strict';
-  const limite = '¡Tu programa no termina nunca! Revisa los bucles.';
+  const traducir = typeof module !== 'undefined' ? require('./idioma').t : globalThis.CR.t;
+  const limite = traducir("comun.tu_programa_no_termina_nunca");
   const propio = (obj, nombre) => Object.hasOwn(obj, nombre);
   const operaciones = {
     '+': (a, b) => Number(a) + Number(b),
@@ -84,16 +85,16 @@
       case 'variable': {
         const dato = buscar(estado.ambito, expr.nombre);
         if (dato !== undefined && typeof dato !== 'object') return dato;
-        throw new Error(`La variable '${expr.nombre}' todavía no tiene valor.`);
+        throw new Error(traducir("comun.la_variable_v0_todavia_no", { v0: expr.nombre }));
       }
       case 'sensor':
         if (!estado.mundo.sensores.includes(expr.nombre)) {
-          throw new Error(`No conozco el sensor '${expr.nombre}'.`);
+          throw new Error(traducir("comun.no_conozco_el_sensor_v0", { v0: expr.nombre }));
         }
         return estado.mundo.sensor(expr.nombre, expr.args.map(arg => valor(arg, estado)));
       case 'binaria': return operaciones[expr.op](valor(expr.izq, estado), valor(expr.der, estado));
       case 'no': return !valor(expr.expr, estado);
-      default: throw new Error('No entiendo esta expresión.');
+      default: throw new Error(traducir("comun.no_entiendo_esta_expresion"));
     }
   }
 
@@ -125,7 +126,7 @@
       case 'accion': {
         if (++estado.acciones > 1000) throw new Error(limite);
         if (!estado.mundo.acciones.includes(instr.nombre)) {
-          throw new Error(`No conozco la orden '${instr.nombre}'.`);
+          throw new Error(traducir("comun.no_conozco_la_orden_v0", { v0: instr.nombre }));
         }
         const resultado = estado.mundo.accion(instr.nombre, instr.args.map(arg => valor(arg, estado)));
         if (!resultado.ok) throw new Error(resultado.mensaje);
@@ -138,7 +139,7 @@
       case 'llamar': {
         const funcion = buscar(estado.ambito, instr.nombre);
         if (!funcion || typeof funcion !== 'object') {
-          throw new Error(`La función '${instr.nombre}' todavía no está definida.`);
+          throw new Error(traducir("comun.la_funcion_v0_todavia_no", { v0: instr.nombre }));
         }
         const locales = nombresLocales(funcion.programa, estado.locales);
         return { programa: funcion.programa, indice: 0, vueltas: 1, ambito: nuevoAmbito(funcion.exterior, locales) };
@@ -149,12 +150,12 @@
       case 'repetir': {
         const vueltas = Number(valor(instr.veces, estado));
         if (!Number.isInteger(vueltas) || vueltas < 0 || vueltas > 50) {
-          throw new Error('Usa un número entero entre 0 y 50 en range().');
+          throw new Error(traducir("comun.usa_un_numero_entero_entre"));
         }
         if (vueltas) return { programa: instr.cuerpo, indice: 0, vueltas };
         break;
       }
-      default: throw new Error('No entiendo esta instrucción.');
+      default: throw new Error(traducir("comun.no_entiendo_esta_instruccion"));
     }
     return null;
   }

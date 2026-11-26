@@ -1,16 +1,17 @@
 (function (CR) {
 'use strict';
+const traducir = typeof module !== 'undefined' ? require('../comun/idioma').t : globalThis.CR.t;
 const Shell = CR.Shell = CR.Shell || {};
 const operadores = ['&&', '||', '>>', '2>', '|', ';', '<', '>', '&'];
 function sustitucion(texto, i) {
   if (texto[i] === '`') {
     const fin = texto.indexOf('`', i + 1);
-    if (fin < 0) throw new Error('Sustitución sin cerrar.');
+    if (fin < 0) throw new Error(traducir("shell.sustitucion_sin_cerrar"));
     return fin + 1;
   }
   if (texto.startsWith('${', i)) {
     const fin = texto.indexOf('}', i + 2);
-    if (fin < 0) throw new Error('Expansión sin cerrar.');
+    if (fin < 0) throw new Error(traducir("shell.expansion_sin_cerrar"));
     return fin + 1;
   }
   if (!texto.startsWith('$(', i)) return i;
@@ -23,7 +24,7 @@ function sustitucion(texto, i) {
     else if (c === '(') nivel++;
     else if (c === ')' && !--nivel) return j + 1;
   }
-  throw new Error('Sustitución sin cerrar.');
+  throw new Error(traducir("shell.sustitucion_sin_cerrar"));
 }
 class Tokenizador {
   constructor(texto, script) {
@@ -56,7 +57,7 @@ class Tokenizador {
   }
   documento(doc) {
     const destino = this.tokens[this.tokens.indexOf(doc) + 1];
-    if (destino?.tipo !== 'palabra') throw new Error('Falta el delimitador del here-doc.');
+    if (destino?.tipo !== 'palabra') throw new Error(traducir("shell.falta_el_delimitador_del_here"));
     const marca = destino.partes.map(p => p.texto).join('');
     doc.documento = '';
     doc.literal = destino.partes.some(p => p.modo !== 'libre');
@@ -66,7 +67,7 @@ class Tokenizador {
       if (fila.replace(/\n$/, '') === marca) return;
       doc.documento += fila;
     }
-    throw new Error('Falta el delimitador final del here-doc: ' + marca);
+    throw new Error(traducir("shell.falta_el_delimitador_final_del_here") + marca);
   }
   entreComillas(cierre) {
     const modo = cierre === '"' ? 'doble' : 'literal';
@@ -87,7 +88,7 @@ class Tokenizador {
       }
     }
     if (this.i === this.texto.length) {
-      const mensaje = this.script ? 'unexpected EOF while looking for matching \x60' + cierre + "'" : 'Comillas sin cerrar.';
+      const mensaje = this.script ? "unexpected EOF while looking for matching `" + cierre + "'" : traducir("shell.comillas_sin_cerrar");
       throw Object.assign(new Error(mensaje), { linea: inicio });
     }
     this.agregar(texto, modo);
@@ -135,13 +136,13 @@ class Tokenizador {
     const op = this.signos.find(s => this.texto.startsWith(s, this.i) && (s !== '2>' || !this.partes.length));
     if (op) { this.operador(op); this.i += op.length; return; }
     if (this.script && /^\$['"!$-]/.test(this.texto.slice(this.i, this.i + 2)))
-      throw Object.assign(new Error('Expansión fuera del subconjunto admitido.'), { linea: this.numero });
+      throw Object.assign(new Error(traducir("shell.expansion_fuera_del_subconjunto_admitido")), { linea: this.numero });
     if (!this.partes.length) this.inicioPalabra = this.i;
     const fin = sustitucion(this.texto, this.i);
     if (fin > this.i) this.libre(fin);
     else if (c === '"' || c === "'") this.entreComillas(c);
     else if (c === '\\') {
-      if (++this.i === this.texto.length) throw new Error('Escape incompleto.');
+      if (++this.i === this.texto.length) throw new Error(traducir("shell.escape_incompleto"));
       const letra = this.mover(this.i + 1);
       if (letra !== '\n') this.agregar(letra, 'literal');
     } else this.libre(this.i + 1);
@@ -151,7 +152,7 @@ function tokenizar(texto, script = false) {
   const t = new Tokenizador(texto, script);
   while (t.i < texto.length) t.siguiente();
   t.palabra();
-  if (t.documentos.length) throw new Error('Falta el cuerpo del here-doc.');
+  if (t.documentos.length) throw new Error(traducir("shell.falta_el_cuerpo_del_here_doc"));
   return t.tokens;
 }
 Shell.Lexico = { tokenizar, sustitucion };

@@ -1,6 +1,13 @@
 (function (CR) {
 'use strict';
-const { CursoBash: temas, ProgresoBash: P, ValidarBash: V, Shell: S, Sonido } = CR;
+const traducir = typeof module !== 'undefined' ? require('../comun/idioma').t : globalThis.CR.t;
+CR.Idioma.registrar('es', 'bash', CR.CursoBash);
+const temas = CR.Idioma.contenido('bash');
+const { ProgresoBash: P, ValidarBash: V, Shell: S, Sonido } = CR;
+const idioma = CR.Idioma.actual();
+const identidad = S.SFA.identidad(idioma);
+const saludo = idioma === 'en' ? 'hello.sh' : 'saludo.sh';
+const campoCodigo = idioma === 'en' ? 'codigoEn' : 'codigo';
 const $ = id => document.getElementById(id);
 const nodo = (tag, texto = '') => Object.assign(document.createElement(tag), { textContent: texto });
 const boton = (texto, onclick) => Object.assign(nodo('button', texto), { type: 'button', onclick });
@@ -9,17 +16,17 @@ let t, i, ficha, intento, pistas, ejecucion, reloj, mini;
 const id = () => t + ':' + i;
 const controles = ['ejecutar', 'paso', 'restaurar', 'comprobar'];
 const editor = CR.Editor.crear({ entrada: $('codigo'), espejo: $('espejo'), numeros: $('numeros'),
-  contador: $('contador'), error: $('error') }, codigo => P.guardar(id(), { codigo }));
+  contador: $('contador'), error: $('error') }, codigo => P.guardar(id(), { [campoCodigo]: codigo }));
 const ajustar = texto => editor.configurar({ lenguaje: 'bash', ordenes }, texto);
 const esReto = () => ['reto', 'arregla'].includes(ficha.tipo);
 const original = () => ficha.codigo === 'anterior' ?
-  P.estado(t + ':' + (i - 1)).codigo ?? ficha.anterior : ficha.codigo;
+  P.estado(t + ':' + (i - 1))[campoCodigo] ?? ficha.anterior : ficha.codigo;
 function barraTema(tema, hechos) {
   const barra = Object.assign(nodo('progress'), { max: tema.pasos.length, value: hechos });
-  barra.setAttribute('aria-label', 'Progreso de ' + tema.titulo);
+  barra.setAttribute('aria-label', traducir("curso.progreso_de") + tema.titulo);
   return barra;
 }
-const cuenta = (tema, hechos) => hechos + ' / ' + tema.pasos.length + ' pasos';
+const cuenta = (tema, hechos) => hechos + ' / ' + tema.pasos.length + traducir("curso.pasos");
 function indice(enfocar = true) {
   parar();
   $('indice').hidden = false;
@@ -29,7 +36,7 @@ function indice(enfocar = true) {
     b.className = tema.proyecto ? 'cartucho dorado' : 'cartucho';
     const hechos = P.total(j + ':');
     b.append(nodo('strong', (j + 1) + ' · ' + tema.titulo), nodo('span', tema.frase),
-      barraTema(tema, hechos), nodo('span', cuenta(tema, hechos)), nodo('small', 'Necesitas: ' + tema.necesita));
+      barraTema(tema, hechos), nodo('span', cuenta(tema, hechos)), nodo('small', traducir("curso.necesitas") + tema.necesita));
     return b;
   }));
   if (enfocar) $('continuar').focus();
@@ -41,7 +48,7 @@ function progreso() {
     const actual = i === j, hecho = P.estado(t + ':' + j).hecho;
     const b = boton(String(j + 1), () => abrir(t, j));
     if (hecho) b.className = 'completo';
-    b.setAttribute('aria-label', 'Paso ' + (j + 1) + ', ' + paso.titulo + (hecho ? ', completado' : ''));
+    b.setAttribute('aria-label', traducir("curso.paso") + (j + 1) + ', ' + paso.titulo + (hecho ? traducir("curso.completado") : ''));
     if (actual) b.setAttribute('aria-current', 'step');
     return b;
   }));
@@ -78,8 +85,8 @@ function mostrarFicha() {
   $('anterior').disabled = !i;
   $('codigo-final').textContent = ficha.codigo;
   $('enlace-faro').hidden = !ficha.enlace;
-  $('enlace-faro').href = 'terminal.html#mision-8-1';
-  $('siguiente-tema').textContent = t + 1 === temas.length ? 'Terminar curso' : 'Siguiente tema →';
+  $('enlace-faro').href = 'terminal.html' + (idioma === 'en' ? '?lang=en' : '') + '#mision-8-1';
+  $('siguiente-tema').textContent = t + 1 === temas.length ? traducir("curso.terminar_curso") : traducir("curso.siguiente_tema");
 }
 function abrir(tema, paso) {
   Sonido.activar();
@@ -90,19 +97,19 @@ function abrir(tema, paso) {
   pistas = 0;
   $('indice').hidden = $('final-curso').hidden = true;
   $('paso-curso').hidden = $('temas').hidden = false;
-  $('posicion').textContent = temas[t].titulo + ' · Paso ' + (i + 1) + ' de ' + temas[t].pasos.length;
+  $('posicion').textContent = temas[t].titulo + traducir("curso.paso_2") + (i + 1) + traducir("comun.de") + temas[t].pasos.length;
   $('titulo-paso').textContent = ficha.titulo;
   $('texto').replaceChildren(...ficha.texto.map(introducir));
   for (const k of ['respuesta', 'ayuda', 'estado', 'salida', 'variables']) $(k).replaceChildren();
-  $('archivo').textContent = ficha.archivo || (t === 0 ? 'saludo.sh' : 'script.sh');
+  $('archivo').textContent = ficha.archivo || (t === 0 ? saludo : 'script.sh');
   $('argumentos').value = (ficha.args || []).map(a => /^[\w./-]+$/.test(a) ? a : "'" + a.replaceAll("'", "'\\''") + "'").join(' ');
-  ajustar(P.estado(id()).codigo ?? original());
+  ajustar(P.estado(id())[campoCodigo] ?? original());
   mostrarFicha();
-  const inicial = new S.SFA.SFA(ficha.fs);
+  const inicial = new S.SFA.SFA(ficha.fs, identidad);
   mostrarArchivos(inicial.nodos, inicial.nodos);
-  mini = t === 0 && i === 2 ? new S.Ejecutor.Sesion({ fs: { 'saludo.sh': ficha.codigo } }) : null;
+  mini = t === 0 && i === 2 ? new S.Ejecutor.Sesion({ fs: { [saludo]: ficha.codigo }, idioma }) : null;
   $('mini-terminal').hidden = !mini;
-  if (mini) $('salida').textContent = 'Prueba bash saludo.sh, ./saludo.sh y chmod +x saludo.sh.\n';
+  if (mini) $('salida').textContent = traducir("curso.prueba_bash_saludo_sh_saludo");
   if (ficha.tipo === 'resumen') completar();
   else progreso();
   $('titulo-paso').focus();
@@ -116,8 +123,9 @@ function finalCurso() {
   parar();
   $('paso-curso').hidden = true;
   $('final-curso').hidden = false;
-  $('progreso-final').textContent = P.total() + ' / 66 pasos completados';
-  CR.Pixel.texto($('letras-final').getContext('2d'), 'FINAL DEL CURSO', 3, 3, 2, '#ffe27f');
+  $('progreso-final').textContent = P.total() + traducir("curso.66_pasos_completados");
+  if (document.documentElement.lang === 'en') $('letras-final').width = 198;
+  CR.Pixel.texto($('letras-final').getContext('2d'), traducir("curso.final_del_curso"), 3, 3, 2, '#ffe27f');
   $('progreso-temas').replaceChildren(...temas.map((tema, j) => {
     const hechos = P.total(j + ':');
     const li = nodo('li');
@@ -127,8 +135,8 @@ function finalCurso() {
   $('titulo-final').focus();
 }
 function mostrarArchivos(antes, despues) {
-  const base = S.SFA.HOME + '/';
-  const virtuales = new Set(['/', '/home', S.SFA.HOME, '/dev', '/dev/null']);
+  const base = identidad.home + '/';
+  const virtuales = new Set(['/', '/home', identidad.home, '/dev', '/dev/null']);
   const rutas = [...new Set([...antes.keys(), ...despues.keys()])].sort().filter(r => !virtuales.has(r));
   $('archivos').replaceChildren(...rutas.map(ruta => {
     const a = antes.get(ruta), d = despues.get(ruta);
@@ -136,7 +144,7 @@ function mostrarArchivos(antes, despues) {
     const li = nodo('li', S.SFA.nombre(nombre) + ((d || a).carpeta ? '/' : ''));
     li.style.paddingInlineStart = nombre.split('/').length - 1 + 'em';
     li.className = !a ? 'nuevo' : !d ? 'borrado' : JSON.stringify(a) !== JSON.stringify(d) ? 'modificado' : '';
-    if (li.className) li.append(' · ' + li.className);
+    if (li.className) li.append(' · ' + (idioma === 'en' ? traducir('bash.archivo_' + li.className) : li.className));
     li.title = ruta;
     return li;
   }));
@@ -174,7 +182,7 @@ function avanzar(entrada) {
   pintar();
   if (r.done) {
     const fallo = ejecucion.resultado.error || ejecucion.resultado.codigo !== 0;
-    salida([{ texto: '[salió con código ' + ejecucion.resultado.codigo + ']\n' }]);
+    salida([{ texto: traducir("curso.salio_con_codigo") + ejecucion.resultado.codigo + ']\n' }]);
     parar();
     if (ficha.tipo === 'explica') completar(fallo ? 'choque' : undefined);
     else if (fallo && ficha.tipo !== 'predice') Sonido.tocar('choque');
@@ -212,7 +220,7 @@ function ejecutar(paso = false, predice = false) {
 }
 function predecir(j) {
   ejecutar(false, true);
-  $('respuesta').textContent = (j === ficha.correcta ? '¡Correcto! ' : 'Casi. ' + ficha.opciones[ficha.correcta] + '. ') + ficha.explicacion;
+  $('respuesta').textContent = (j === ficha.correcta ? traducir("curso.correcto") : traducir("curso.casi") + ficha.opciones[ficha.correcta] + '. ') + ficha.explicacion;
   completar(j === ficha.correcta ? 'recoger' : 'choque');
 }
 function comprobar() {
@@ -234,9 +242,9 @@ $('siguiente').onclick = $('saltar').onclick = $('siguiente-tema').onclick = sig
 $('ejecutar').onclick = () => ejecutar();
 $('paso').onclick = () => ejecutar(true);
 $('parar').onclick = parar;
-$('restaurar').onclick = () => { ajustar(original()); P.guardar(id(), { codigo: editor.texto() }); };
+$('restaurar').onclick = () => { ajustar(original()); P.guardar(id(), { [campoCodigo]: editor.texto() }); };
 $('comprobar').onclick = comprobar;
-$('solucion').onclick = () => { ajustar(ficha.solucion); P.guardar(id(), { codigo: editor.texto() }); };
+$('solucion').onclick = () => { ajustar(ficha.solucion); P.guardar(id(), { [campoCodigo]: editor.texto() }); };
 $('pista').onclick = () => {
   $('ayuda').textContent = ficha.pistas[pistas++];
   $('pista').disabled = pistas >= ficha.pistas.length;
@@ -255,7 +263,7 @@ $('mini-terminal').onsubmit = e => {
   salida([{ texto: '$ ' + orden + '\n' }, ...mini.ejecutar(orden).eventos]);
   mostrarArchivos(antes, mini.fs.nodos);
 };
-function sonido() { $('sonido').textContent = CR.Progreso.silencio() ? 'Activar sonido' : 'Silenciar'; }
+function sonido() { $('sonido').textContent = CR.Progreso.silencio() ? traducir("comun.activar_sonido") : traducir("comun.silenciar"); }
 $('sonido').onclick = () => {
   CR.Progreso.guardarSilencio(!CR.Progreso.silencio());
   CR.Sonido.activar();

@@ -3,23 +3,31 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sobre el creador — Código Retro</title>
-  <link rel="stylesheet" href="css/estilo.css">
-  <link rel="stylesheet" href="css/taller.css">
+  <title data-t="creador.sobre_el_creador_codigo_retro">Sobre el creador — Código Retro</title>
+  <link rel="stylesheet" href="css/estilo.css?v=1.3.0">
+  <link rel="stylesheet" href="css/taller.css?v=1.3.0">
 </head>
 <body>
-  <header class="barra"><h1>Sobre el creador</h1><a class="boton" href="index.html">← Menú principal</a></header>
+  <header class="barra"><h1 data-t="creador.sobre_el_creador">Sobre el creador</h1><a class="boton" href="index.html" data-t="apoya.menu_principal">← Menú principal</a>    <div class="selector-idioma" role="group" aria-label="Idioma" data-t-aria="idioma.selector">
+      <button type="button" data-idioma="es" aria-pressed="true" aria-label="Español" data-t-aria="idioma.es">ES</button>
+      <span aria-hidden="true">|</span>
+      <button type="button" data-idioma="en" aria-pressed="false" aria-label="Inglés" data-t-aria="idioma.en">EN</button>
+    </div>
+  </header>
   <main class="contenedor pagina-creador">
     <article class="panel">
-      <canvas id="avatar-creador" width="16" height="16" role="img" aria-label="Retrato de píxeles con sudadera y portátil"></canvas>
+      <canvas id="avatar-creador" width="16" height="16" role="img" aria-label="Retrato de píxeles con sudadera y portátil" data-t-aria="creador.retrato_de_pixeles_con_sudadera_y"></canvas>
       <h2 id="nombre"></h2>
       <p id="rol"></p>
-      <h3>Quién soy</h3><p id="quienSoy"></p>
-      <h3>Por qué hice Código Retro</h3><p id="porQue"></p>
+      <h3 data-t="creador.quien_soy">Quién soy</h3><p id="quienSoy"></p>
+      <h3 data-t="creador.por_que_hice_codigo_retro">Por qué hice Código Retro</h3><p id="porQue"></p>
       <div class="controles" id="enlaces-creador"></div>
     </article>
   </main>
-  <script src="js/datos-creador.js"></script>
-  <script src="js/paginas-creador.js"></script>
+  <script src="js/idiomas/es.js?v=1.3.0"></script>
+  <script src="js/idiomas/en.js?v=1.3.0"></script>
+  <script src="js/comun/idioma.js?v=1.3.0"></script>
+  <script src="js/datos-creador.js?v=1.3.0"></script>
+  <script src="js/paginas-creador.js?v=1.3.0"></script>
 </body>
 </html>

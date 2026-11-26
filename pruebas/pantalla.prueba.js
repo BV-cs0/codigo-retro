@@ -39,10 +39,10 @@ class Nodo {
   getAttribute(nombre) { return this.atributos?.[nombre]; }
   getContext() { return { fillRect() {}, clearRect() {} }; }
   showModal() { this.open = true; }
-  close() { this.open = false; }
+  close() { this.open = false; this.emitir('close'); }
 }
 
-function cargar(archivo, storage, datos = {}) {
+function cargar(archivo, storage, datos = {}, idioma = 'es') {
   const raiz = join(__dirname, '..');
   const html = readFileSync(join(raiz, archivo), 'utf8');
   const ids = Object.fromEntries([...html.matchAll(/id="([^"]+)"/g)].map(([, id]) => [id, new Nodo()]));
@@ -50,28 +50,30 @@ function cargar(archivo, storage, datos = {}) {
   const retratos = ['robot', 'mago', 'granja'].map(demo => Object.assign(new Nodo(), { dataset: { demo, total: demo } }));
   const pendientes = new Map();
   let contador = 0;
-  const ubicacion = { hash: '' };
+  const ubicacion = { hash: '', href: 'file:///codigo-retro/' + archivo };
   const eventos = {};
   const crt = new Nodo();
   const contexto = vm.createContext({
     document: {
+      documentElement: {},
       getElementById: id => ids[id],
       createElement: tag => new Nodo(tag),
       createTextNode: texto => Object.assign(new Nodo(), { textContent: texto }),
       createDocumentFragment: () => new Nodo(),
-      querySelectorAll: () => retratos,
+      querySelectorAll: selector => /^\[data-(?:t(?:-|\])|idioma)/.test(selector) ? [] : retratos,
       querySelector: () => crt
     },
     localStorage: storage, matchMedia: () => ({ matches: true }),
     addEventListener(tipo, evento) { eventos[tipo] = evento; },
-    TextEncoder, location: ubicacion, getSelection: () => '', getComputedStyle: () => ({ fontSize: '16px' }),
+    URL, TextEncoder, TextDecoder, btoa, atob, location: ubicacion, getSelection: () => '', getComputedStyle: () => ({ fontSize: '16px' }),
     setTimeout(funcion) { pendientes.set(++contador, funcion); return contador; },
     clearTimeout: id => pendientes.delete(id)
   });
   contexto.window = contexto;
-  contexto.navigator = {};
+  contexto.navigator = { languages: [idioma] };
   contexto.confirm = () => true;
-  for (const [, ruta] of html.matchAll(/<script src="([^"]+)"/g)) {
+  for (const [, recurso] of html.matchAll(/<script src="([^"]+)"/g)) {
+    const ruta = recurso.split(/[?#]/)[0];
     vm.runInContext(datos[ruta] ?? readFileSync(join(raiz, ruta), 'utf8'), contexto, { filename: ruta });
   }
   function animar() {
@@ -211,7 +213,76 @@ function probarProyecto(prueba) {
     assert.equal(ids.indice.hidden, false);
   });
 }
+function probarCursoEnIngles(prueba) {
+  prueba('Pantalla del curso · progreso común y código del proyecto por idioma', () => {
+    const memoria = new Map();
+    const storage = { getItem: id => memoria.get(id), setItem: (id, valor) => memoria.set(id, valor) };
+    const es = cargar('curso.html', storage).ids;
+    const proyectoEs = require('../js/curso/temas/proyecto').pasos;
+    es.cartuchos.children[10].click();
+    es.puntos.children[1].click();
+    escribir(es, proyectoEs[1].solucion + '\n# Mi partida');
+    es.comprobar.click();
+    es.siguiente.click();
+
+    const en = cargar('curso.html', storage, {}, 'en').ids;
+    const proyectoEn = require('../js/curso/temas/proyecto-en').pasos;
+    assert.match(en.cartuchos.children[10].firstElementChild.textContent, /Guess the Number/);
+    en.continuar.click();
+    assert.equal(en['titulo-paso'].textContent, proyectoEn[2].titulo);
+    assert.equal(en.puntos.children[1].className, 'completo');
+    assert.equal(en.codigo.value, proyectoEn[1].solucion);
+    escribir(en, proyectoEn[2].solucion);
+    en.comprobar.click();
+    assert.equal(en.siguiente.disabled, false);
+    en.puntos.children[9].click();
+    assert.match(en['codigo-final'].textContent, /def play\(\)/);
+
+    const recarga = cargar('curso.html', storage).ids;
+    recarga.cartuchos.children[10].click();
+    recarga.puntos.children[2].click();
+    assert.equal(recarga.codigo.value, proyectoEs[1].solucion + '\n# Mi partida');
+    assert.equal(recarga.puntos.children[2].className, 'completo');
+  });
+  prueba('Pantalla del curso · Pico ejecuta sus órdenes en inglés', () => {
+    const { ids, animar } = cargar('curso.html', undefined, {}, 'en');
+    const mundo = require('../js/curso/temas/condiciones-en').pasos[8];
+    ids.cartuchos.children[2].click();
+    ids.puntos.children[8].click();
+    escribir(ids, mundo.solucion);
+    ids.ejecutar.click();
+    while (animar()) {}
+    assert.equal(ids.siguiente.disabled, false);
+  });
+}
 function probarTaller(prueba) {
+  prueba('Taller en pantalla · fichas, filtros y progreso compartido en inglés', () => {
+    const memoria = new Map();
+    const storage = { getItem: id => memoria.get(id), setItem: (id, valor) => memoria.set(id, valor) };
+    const en = cargar('ejercicios.html', storage, {}, 'en').ids;
+    assert.equal(en['fichas-taller'].children.length, 70);
+    assert.ok(en['filtro-tema'].children.some(n => n.value === 'bash' && n.textContent === 'Bash Scripting'));
+    assert.ok(en['filtro-dificultad'].children.some(n => n.value === 1 && n.textContent === '★ Easy'));
+    en['filtro-lenguaje'].value = 'bash';
+    en['filtro-lenguaje'].onchange();
+    assert.equal(en['fichas-taller'].children.length, 15);
+    en['filtro-lenguaje'].value = 'python';
+    en['filtro-lenguaje'].onchange();
+    assert.equal(en['fichas-taller'].children.length, 55);
+    en['fichas-taller'].children[0].click();
+    assert.equal(en['titulo-ejercicio'].textContent, 'A text frame');
+    en.pista.click();
+    assert.equal(en.ayuda.textContent, 'Use one print call per line.');
+    escribir(en, require('./datos-ejercicios').en[0].solucion);
+    en.comprobar.click();
+    assert.equal(en['titular-veredicto'].textContent, '✔ Correct!');
+    const es = cargar('ejercicios.html', storage).ids;
+    assert.match(es['fichas-taller'].children[0].className, /autonomo/);
+    es['fichas-taller'].children[0].click();
+    assert.equal(es['titulo-ejercicio'].textContent, 'Un marco de texto');
+    assert.equal(es.codigo.value, '');
+    assert.equal(cargar('index.html', storage).ids['resueltos-menu'].textContent, '1 / 70 resueltos');
+  });
   prueba('Taller en pantalla · filtros, pistas, solución asistida y persistencia', () => {
     const memoria = new Map();
     const storage = { getItem: id => memoria.get(id), setItem: (id, valor) => memoria.set(id, valor) };
@@ -311,6 +382,41 @@ function probarBash(prueba) {
     assert.equal(ids.archivos.children.filter(n => n.className === 'nuevo').length, 2);
   });
 }
+function probarBashEnIngles(prueba) {
+  prueba('Bash en pantalla · contenido inglés, borradores por idioma y avance compartido', () => {
+    const datos = new Map();
+    const storage = { getItem: clave => datos.get(clave), setItem: (clave, valor) => datos.set(clave, valor) };
+    const { ids: es } = cargar('bash.html', storage);
+    es.continuar.click();
+    escribir(es, 'echo "Mi parte"');
+    es.ejecutar.click();
+    const { ids } = cargar('bash.html', storage, {}, 'en');
+    assert.equal(ids.cartuchos.children.length, 8);
+    assert.match(ids.cartuchos.children[0].firstElementChild.textContent, /Your first script/);
+    ids.continuar.click();
+    assert.equal(ids.siguiente.disabled, false);
+    assert.match(ids.codigo.value, /Hello/);
+    escribir(ids, 'echo "My report"');
+    ids.puntos.children[2].click();
+    assert.equal(ids.archivo.textContent, 'hello.sh');
+    ids.orden.value = 'echo $USER@$HOSTNAME:$HOME; bash hello.sh';
+    ids['mini-terminal'].onsubmit({ preventDefault() {} });
+    const salida = ids.salida.children.map(n => n.textContent).join('');
+    assert.match(salida, /apprentice@beacon7:\/home\/apprentice/);
+    assert.match(salida, /Light on/);
+    ids.temas.click();
+    ids.cartuchos.children[7].click();
+    ids.puntos.children[7].click();
+    assert.match(ids['codigo-final'].textContent, /Lighthouse report/);
+    assert.equal(ids['enlace-faro'].href, 'terminal.html?lang=en#mision-8-1');
+    ids['siguiente-tema'].click();
+    assert.equal(ids['final-curso'].hidden, false);
+    assert.equal(ids['progreso-final'].textContent, '2 / 66 steps complete');
+    assert.equal(ids['progreso-temas'].children.length, 8);
+    es.puntos.children[0].click();
+    assert.equal(es.codigo.value, 'echo "Mi parte"');
+  });
+}
 function probarAspectoBash(prueba) {
   prueba('Bash · frases y requisitos de los ocho cartuchos', () => {
     const { ids } = cargar('bash.html');
@@ -370,8 +476,8 @@ function probarFinalBash(prueba) {
     assert.equal(filas[7].children[2].textContent, '2 / 8 pasos');
     const html = readFileSync(join(__dirname, '../bash.html'), 'utf8');
     assert.match(html, /aria-label="Final del curso"/);
-    assert.match(html, /href="ejercicios\.html#bash">Practicar en el Taller/);
-    assert.match(html, /href="terminal\.html#mision-8-1">Ir al capítulo 8 de El Faro/);
+    assert.match(html, /href="ejercicios\.html#bash"[^>]*>Practicar en el Taller/);
+    assert.match(html, /href="terminal\.html#mision-8-1"[^>]*>Ir al capítulo 8 de El Faro/);
     ids['volver-temas'].click();
     assert.equal(ids.indice.hidden, false);
     assert.equal(ids['final-curso'].hidden, true);
@@ -383,8 +489,8 @@ function probarPaginas(prueba) {
     assert.match(readFileSync(join(__dirname, '../index.html'), 'utf8'), /id="tarjeta-bash" href="bash\.html"/);
     assert.equal(ids['total-bash'].textContent, '0 / 66 pasos');
     assert.match(readFileSync(join(__dirname, '../index.html'), 'utf8'), /href="terminal\.html"/);
-    assert.equal(ids['total-faro'].textContent, '0 / 40 misiones');
-    assert.equal(cargar('index.html', { getItem: () => JSON.stringify({ hechas: ['1-1'] }) }).ids['total-faro'].textContent, '1 / 40 misiones');
+    assert.equal(ids['total-faro'].textContent, '0 / 60 misiones');
+    assert.equal(cargar('index.html', { getItem: () => JSON.stringify({ hechas: ['1-1'] }) }).ids['total-faro'].textContent, '1 / 60 misiones');
     const creador = cargar('creador.html', undefined, { 'js/datos-creador.js': 'window.CR = { DatosCreador: {} }' });
     const apoyo = cargar('apoya.html', undefined, { 'js/datos-apoyo.js': 'window.CR = { DatosApoyo: {} }' });
     assert.equal(creador.ids['enlaces-creador'].children.length, 0);
@@ -407,7 +513,7 @@ function probarFaro(prueba) {
     enviar('if [ -d /home ]; then mostrar; fi');
     assert.equal(ids.salida.children.at(-1).firstElementChild.textContent, '<Lumen>\n');
   });
-  prueba('El Faro en pantalla · 40 misiones, animación final y progreso', () => {
+  prueba('El Faro en pantalla · 60 misiones, animación final y progreso', () => {
     const datos = new Map();
     const storage = { getItem: id => datos.get(id), setItem: (id, valor) => datos.set(id, valor) };
     const { ids, navegar } = cargar('terminal.html', storage);
@@ -424,8 +530,17 @@ function probarFaro(prueba) {
     assert.equal(ids['titulo-victoria'].textContent, 'Faro-7 encendido');
     assert.match(ids.aprendido.firstElementChild.textContent, /Has aprendido \d+ comandos/);
     navegar('#capitulos');
-    assert.equal(ids['progreso-capitulos'].textContent, '40 / 40 misiones');
-    assert.equal(ids['lista-capitulos'].children.length, 8);
+    assert.equal(ids['progreso-capitulos'].textContent, '60 / 60 misiones');
+    assert.equal(ids['lista-capitulos'].children.length, 13);
+    assert.equal(ids['lista-capitulos'].children[8].textContent, 'Temporada 2');
+    const recarga = cargar('terminal.html', storage);
+    recarga.navegar('#capitulos');
+    assert.equal(recarga.ids['progreso-capitulos'].textContent, '60 / 60 misiones');
+    assert.equal(cargar('index.html', storage).ids['total-faro'].textContent, '60 / 60 misiones');
+    const ingles = cargar('terminal.html', storage, {}, 'en');
+    ingles.navegar('#capitulos');
+    assert.equal(ingles.ids['lista-capitulos'].children[8].textContent, 'Season 2');
+    assert.equal(ingles.ids['progreso-capitulos'].textContent, '60 / 60 missions');
   });
   prueba('El Faro en pantalla · Tab, historial, fósforo y restablecimiento', () => {
     const datos = new Map();
@@ -460,14 +575,57 @@ function probarFaro(prueba) {
     assert.ok(ids.objetivos.children.every(o => o.className !== 'hecho'));
   });
 }
+function probarAtalaya(prueba) {
+  prueba('Atalaya en pantalla · ética, puntuación, final y cambio de idioma', () => {
+    const datos = new Map();
+    const storage = { getItem: id => datos.get(id), setItem: (id, valor) => datos.set(id, valor) };
+    const { ids } = cargar('retos.html', storage);
+    const enviar = linea => {
+      ids.linea.value = linea;
+      ids.orden.emitir('submit', { preventDefault() {} });
+    };
+    assert.equal(ids.etica.open, true);
+    let obligatorio = false;
+    ids.etica.emitir('cancel', { preventDefault() { obligatorio = true; } });
+    assert.equal(obligatorio, true);
+    ids['aceptar-etica'].click();
+    require('./datos-atalaya-bash');
+    const retos = globalThis.CR.Atalaya.lista('es');
+    ids.pista.click();
+    assert.equal(ids['puntos-reto'].textContent, '75 puntos');
+    enviar('enviar FLAG{mal}');
+    assert.equal(ids.cierre.open, undefined);
+    for (const [i, reto] of retos.entries()) {
+      if (i) {
+        const botones = ids.categorias.children.flatMap(columna => columna.children.filter(n => n.tagName === 'BUTTON'));
+        botones[i].click();
+      }
+      for (const linea of reto.solucion) enviar(linea);
+      assert.equal(ids.cierre.open, true);
+      ids['cerrar-reto'].click();
+    }
+    assert.equal(ids.final.open, true);
+    assert.equal(ids['final-total'].textContent, '20 / 20 retos · 4675 puntos');
+    const en = cargar('retos.html', storage, {}, 'en').ids;
+    assert.equal(en.etica.open, undefined);
+    assert.equal(en.total.textContent, '20 / 20 challenges · 4675 points');
+    assert.match(en.prompt.textContent, /^analyst@watchtower/);
+    en['abrir-etica'].click();
+    assert.equal(en.etica.open, true);
+    assert.equal(cargar('index.html', storage, {}, 'en').ids['total-atalaya'].textContent, en.total.textContent);
+  });
+}
 module.exports = prueba => {
+  probarAtalaya(prueba);
   probarFaro(prueba);
   probarTaller(prueba);
   probarBash(prueba);
+  probarBashEnIngles(prueba);
   probarAspectoBash(prueba);
   probarFinalBash(prueba);
   probarPaginas(prueba);
   probarDemos(prueba);
   probarCurso(prueba);
   probarProyecto(prueba);
+  probarCursoEnIngles(prueba);
 };

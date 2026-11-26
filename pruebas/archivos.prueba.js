@@ -27,7 +27,8 @@ module.exports = prueba => {
       if (nombre.endsWith('.js')) new vm.Script(texto, { filename: nombre });
       if (nombre.endsWith('.html')) {
         for (const [, ruta] of texto.matchAll(/(?:src|href)="([^"]+)"/g)) {
-          const [archivo, ancla] = ruta.split('#');
+          const [recurso, ancla] = ruta.split('#');
+          const archivo = recurso.split('?')[0];
           assert.equal(existsSync(join(dirname(nombre), archivo)), true, ruta);
           if (!archivo && ancla) assert.ok(texto.includes('id="' + ancla + '"'), ruta);
         }

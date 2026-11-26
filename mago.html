@@ -3,41 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>El hechizo de Brasa · Código Retro</title>
-  <link rel="stylesheet" href="css/estilo.css">
+  <title data-t="mago.el_hechizo_de_brasa_codigo_retro">El hechizo de Brasa · Código Retro</title>
+  <link rel="stylesheet" href="css/estilo.css?v=1.3.0">
 </head>
 <body class="mago">
   <header class="barra">
-    <div><h1>El hechizo de Brasa</h1><p id="encabezado-nivel"></p></div>
-    <nav aria-label="Navegación"><a class="boton" href="index.html">Menú</a><button id="sonido" type="button">Silenciar</button></nav>
+    <div><h1 data-t="menu.el_hechizo_de_brasa">El hechizo de Brasa</h1><p id="encabezado-nivel"></p></div>
+    <nav aria-label="Navegación" data-t-aria="granja.navegacion"><a class="boton" href="index.html" data-t="granja.menu">Menú</a><button id="sonido" type="button" data-t="bash.silenciar">Silenciar</button>
+    <div class="selector-idioma" role="group" aria-label="Idioma" data-t-aria="idioma.selector">
+      <button type="button" data-idioma="es" aria-pressed="true" aria-label="Español" data-t-aria="idioma.es">ES</button>
+      <span aria-hidden="true">|</span>
+      <button type="button" data-idioma="en" aria-pressed="false" aria-label="Inglés" data-t-aria="idioma.en">EN</button>
+    </div>
+    </nav>
   </header>
   <main class="contenedor">
     <section id="selector" class="panel selector">
-      <h2>Elige un nivel</h2>
+      <h2 data-t="granja.elige_un_nivel">Elige un nivel</h2>
       <div id="niveles"></div>
     </section>
     <section id="partida" hidden>
       <div class="cabecera-partida">
-        <h2 id="titulo-nivel"></h2><span id="estrellas" class="estrellas" aria-label="Estrellas del nivel"></span>
-        <button type="button" id="volver-niveles">Niveles</button>
+        <h2 id="titulo-nivel"></h2><span id="estrellas" class="estrellas" aria-label="Estrellas del nivel" data-t-aria="granja.estrellas_del_nivel"></span>
+        <button type="button" id="volver-niveles" data-t="granja.niveles">Niveles</button>
       </div>
       <div class="partida">
-        <section class="panel mundo" aria-label="Mapa y controles">
+        <section class="panel mundo" aria-label="Mapa y controles" data-t-aria="granja.mapa_y_controles">
           <div class="sobre-mapa"><strong id="variante"></strong><span id="mapas-info"></span></div>
-          <canvas id="mapa" width="204" height="192" aria-label="Mapa de Brasa">Mapa de Brasa</canvas>
-          <div id="variables" class="variables" hidden><strong>Variables</strong><p id="datos"></p></div>
+          <canvas id="mapa" width="204" height="192" aria-label="Mapa de Brasa" data-t-aria="mago.mapa_de_brasa" data-t="mago.mapa_de_brasa">Mapa de Brasa</canvas>
+          <div id="variables" class="variables" hidden><strong data-t="bash.variables">Variables</strong><p id="datos"></p></div>
           <div class="controles">
-            <button class="primario" type="button" id="ejecutar">▶ Ejecutar</button>
-            <button type="button" id="paso">Paso a paso</button>
-            <button type="button" id="parar">■ Parar</button>
-            <button type="button" id="reiniciar">↺ Reiniciar mapa</button>
-            <button type="button" id="pista">💡 Pista</button>
-            <label>Velocidad <select id="velocidad"><option value="620">Lenta</option><option value="285" selected>Normal</option><option value="75">Rápida</option></select></label>
+            <button class="primario" type="button" id="ejecutar" data-t="bash.ejecutar">▶ Ejecutar</button>
+            <button type="button" id="paso" data-t="bash.paso_a_paso">Paso a paso</button>
+            <button type="button" id="parar" data-t="bash.parar">■ Parar</button>
+            <button type="button" id="reiniciar" data-t="granja.reiniciar_mapa">↺ Reiniciar mapa</button>
+            <button type="button" id="pista" data-t="ejercicios.pista">💡 Pista</button>
+            <label><span data-t="bash.velocidad">Velocidad</span> <select id="velocidad"><option value="620" data-t="bash.lenta">Lenta</option><option value="285" selected data-t="bash.normal">Normal</option><option value="75" data-t="bash.rapida">Rápida</option></select></label>
           </div>
           <p id="mensaje" role="status"></p>
         </section>
-        <section class="panel panel-editor" aria-label="Editor de Python">
-          <div class="cabecera-editor"><label for="codigo">Código Python</label><span id="contador"></span></div>
+        <section class="panel panel-editor" aria-label="Editor de Python" data-t-aria="granja.editor_de_python">
+          <div class="cabecera-editor"><label for="codigo" data-t="granja.codigo_python">Código Python</label><span id="contador"></span></div>
           <div class="editor">
             <div id="numeros" aria-hidden="true"></div>
             <div class="fuente-codigo">
@@ -46,14 +52,14 @@
             </div>
           </div>
           <p id="error" role="alert"></p>
-          <p id="ayuda-editor">Tab sangra · Mayús+Tab quita sangría · Esc y Tab salen del editor</p>
+          <p id="ayuda-editor" data-t="granja.tab_sangra_mayus_tab_quita_sangria">Tab sangra · Mayús+Tab quita sangría · Esc y Tab salen del editor</p>
         </section>
         <aside class="panel libreta">
           <h3 id="libreta-titulo"></h3>
           <dl id="ordenes"></dl>
-          <h4>Ejemplo</h4>
+          <h4 data-t="granja.ejemplo">Ejemplo</h4>
           <pre id="ejemplo"></pre>
-          <button id="copiar" type="button">Copiar al editor</button>
+          <button id="copiar" type="button" data-t="granja.copiar_al_editor">Copiar al editor</button>
         </aside>
       </div>
     </section>
@@ -64,17 +70,22 @@
       <div><h2 id="dialogo-titulo"></h2><div id="dialogo-texto"></div><div id="dialogo-acciones"></div></div>
     </div>
   </dialog>
-  <script src="js/comun/motor.js"></script>
-  <script src="js/comun/python.js"></script>
-  <script src="js/comun/progreso.js"></script>
-  <script src="js/comun/lecciones.js"></script>
-  <script src="js/comun/tablero.js"></script>
-  <script src="js/comun/pixel.js"></script>
-  <script src="js/comun/sonido.js"></script>
-  <script src="js/comun/editor.js"></script>
-  <script src="js/comun/nivel-ui.js"></script>
-  <script src="js/mago/mundo.js"></script>
-  <script src="js/mago/niveles.js"></script>
-  <script src="js/mago/juego.js"></script>
+  <script src="js/idiomas/es.js?v=1.3.0"></script>
+  <script src="js/idiomas/en.js?v=1.3.0"></script>
+  <script src="js/comun/idioma.js?v=1.3.0"></script>
+  <script src="js/comun/motor.js?v=1.3.0"></script>
+  <script src="js/comun/python.js?v=1.3.0"></script>
+  <script src="js/comun/progreso.js?v=1.3.0"></script>
+  <script src="js/comun/lecciones.js?v=1.3.0"></script>
+  <script src="js/comun/tablero.js?v=1.3.0"></script>
+  <script src="js/comun/pixel.js?v=1.3.0"></script>
+  <script src="js/comun/sonido.js?v=1.3.0"></script>
+  <script src="js/comun/editor.js?v=1.3.0"></script>
+  <script src="js/comun/nivel-ui.js?v=1.3.0"></script>
+  <script src="js/mago/mundo.js?v=1.3.0"></script>
+  <script src="js/mago/niveles.js?v=1.3.0"></script>
+  <script src="js/comun/demo-idioma.js?v=1.3.0"></script>
+  <script src="js/mago/niveles-en.js?v=1.3.0"></script>
+  <script src="js/mago/juego.js?v=1.3.0"></script>
 </body>
 </html>

@@ -1,8 +1,9 @@
 (function (CR) {
 'use strict';
+const traducir = typeof module !== 'undefined' ? require('../../comun/idioma').t : globalThis.CR.t;
 const Shell = CR.Shell = CR.Shell || {};
 const { S, registrar: R, opciones, cmp } = typeof module !== 'undefined' ? require('./base') : Shell.Base;
-const tamano = nodo => nodo.carpeta ? 4096 : S.bytes(nodo.contenido);
+const tamano = nodo => Shell.Espacio?.tamano(nodo) ?? (nodo.carpeta ? 4096 : S.bytes(nodo.contenido));
 function humano(bytes) {
   const unidades = ['K', 'M', 'G'];
   let i = -1;
@@ -23,13 +24,15 @@ function ordenar(datos, flags) {
 }
 function detalle(c, datos, flags, total) {
   const filas = datos.map(({ ruta, nombre, nodo }) => [
-    (nodo.carpeta ? 'd' : '-') + nodo.permisos,
+    (nodo.carpeta ? 'd' : nodo.enlace !== undefined ? 'l' : '-') + (nodo.suid ? nodo.permisos.slice(0, 2) +
+      (nodo.permisos[2] === 'x' ? 's' : 'S') + nodo.permisos.slice(3) : nodo.permisos),
     String(nodo.carpeta ? 2 + c.fs.hijos(ruta).filter(p => c.fs.nodos.get(p).carpeta).length : 1),
-    nodo.dueno, nodo.grupo, flags.h ? humano(tamano(nodo)) : String(tamano(nodo)), fecha(nodo), nombre
+    nodo.dueno, nodo.grupo, flags.h ? humano(tamano(nodo)) : String(tamano(nodo)), fecha(nodo),
+    nodo.enlace === undefined ? nombre : nombre + ' -> ' + nodo.enlace
   ]);
   const anchos = [1, 2, 3, 4].map(i => Math.max(0, ...filas.map(f => f[i].length)));
   if (total) {
-    const bloques = datos.reduce((n, { nodo }) => n + Math.ceil(tamano(nodo) / 4096) * 4, 0);
+    const bloques = datos.reduce((n, { nodo }) => n + (nodo.enlace === undefined ? Math.ceil(tamano(nodo) / 4096) * 4 : 0), 0);
     c.out('total ' + (flags.h ? humano(bloques * 1024) : bloques) + '\n');
   }
   filas.forEach((f, i) => {
@@ -79,12 +82,19 @@ function directorio(c, entrada, flags, rotulo) {
     directorio(c, { ...dato, nombre: entrada.nombre.replace(/\/$/, '') + '/' + dato.nombre }, flags, true);
   }
 }
-R('ls', 'Lista archivos y carpetas.', ['ls -la', 'ls -lhS cartas'], c => {
+R('ls', traducir("shell.lista_archivos_y_carpetas"), ['ls -la', 'ls -lhS cartas'], c => {
   const { args, flags } = opciones(c, 'laAhR1tSr');
   const datos = [];
   for (const nombre of args.length ? args : ['.']) {
     const ruta = c.ruta(nombre);
-    try { datos.push({ ruta, nombre, nodo: c.fs.obtener(ruta) }); }
+    try {
+      const nodo = c.fs.obtener(ruta, nombre.endsWith('/'));
+      let seguir = false;
+      if (nodo.enlace !== undefined && !flags.l && !flags.R) {
+        try { seguir = c.fs.acceso(ruta)?.carpeta; } catch { /* List the link itself. */ }
+      }
+      datos.push(seguir ? { ruta: c.fs.resolver(ruta), nombre, nodo: c.fs.obtener(ruta) } : { ruta, nombre, nodo });
+    }
     catch (e) { c.error("ls: cannot access '" + nombre + "': " + e.message, 2); }
   }
   ordenar(datos, flags);
@@ -95,9 +105,9 @@ R('ls', 'Lista archivos y carpetas.', ['ls -la', 'ls -lhS cartas'], c => {
     if (archivos.length || i) c.out('\n');
     directorio(c, d, flags, flags.R || args.length > 1);
   });
-}, { '-l': 'permisos y tamaños', '-a / -A': 'incluye ocultos', '-h': 'tamaños legibles',
-  '-R': 'recorre subcarpetas', '-1': 'un nombre por línea', '-t / -S': 'fecha o tamaño', '-r': 'invierte el orden' });
-R('tree', 'Dibuja un árbol de carpetas.', ['tree', 'tree almacen'], c => {
+}, { '-l': traducir("shell.permisos_y_tamanos"), '-a / -A': traducir("shell.incluye_ocultos"), '-h': traducir("shell.tamanos_legibles"),
+  '-R': traducir("shell.recorre_subcarpetas"), '-1': traducir("shell.un_nombre_por_linea"), '-t / -S': traducir("shell.fecha_o_tamano"), '-r': traducir("shell.invierte_el_orden") });
+R('tree', traducir("shell.dibuja_un_arbol_de_carpetas"), ['tree', 'tree almacen'], c => {
   const { args } = opciones(c);
   let carpetas = 0;
   let archivos = 0;

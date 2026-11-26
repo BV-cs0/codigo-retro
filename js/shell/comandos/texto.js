@@ -1,9 +1,10 @@
 (function (CR) {
 'use strict';
+const traducir = typeof module !== 'undefined' ? require('../../comun/idioma').t : globalThis.CR.t;
 const Shell = CR.Shell = CR.Shell || {};
 const B = typeof module !== 'undefined' ? require('./base') : Shell.Base;
 const { S, registrar: R, opciones, archivos, lineas, filas, cmp } = B;
-R('echo', 'Escribe texto.', ['echo hola', "echo -e 'a\\nb'"], c => {
+R('echo', traducir("shell.escribe_texto"), ['echo hola', "echo -e 'a\\nb'"], c => {
   const args = [...c.args];
   let flags = '';
   while (/^-[neE]+$/.test(args[0] || '')) flags += args.shift().slice(1);
@@ -13,8 +14,8 @@ R('echo', 'Escribe texto.', ['echo hola', "echo -e 'a\\nb'"], c => {
     salida = salida.replace(/\\([ntrab\\])/g, (_, letra) => escapes[letra]);
   }
   c.out(salida + (flags.includes('n') ? '' : '\n'));
-}, { '-n': 'omite el salto final', '-e': 'interpreta escapes' });
-R('cat', 'Lee o concatena archivos.', ['cat nota.txt', 'cat -n nota.txt'], c => {
+}, { '-n': traducir("shell.omite_el_salto_final"), '-e': traducir("shell.interpreta_escapes") });
+R('cat', traducir("shell.lee_o_concatena_archivos"), ['cat nota.txt', "cat -n nota.txt"], c => {
   const { args, flags } = opciones(c, 'n');
   let numero = 1;
   let inicio = true;
@@ -24,8 +25,8 @@ R('cat', 'Lee o concatena archivos.', ['cat nota.txt', 'cat -n nota.txt'], c => 
       inicio = linea.endsWith('\n');
     }
   });
-}, { '-n': 'numera las líneas' });
-R('less', 'Muestra un archivo en el historial desplazable.', ['less nota.txt', 'less manual.txt'], c => {
+}, { '-n': traducir("shell.numera_las_lineas") });
+R('less', traducir("shell.muestra_un_archivo_en_el_historial"), ['less nota.txt', "less manual.txt"], c => {
   archivos(c, opciones(c).args, texto => c.out(texto));
 });
 function recortar(nombre, datos, cantidad) {
@@ -33,7 +34,7 @@ function recortar(nombre, datos, cantidad) {
   if (nombre === 'head') return datos.slice(0, n < 0 ? Math.max(0, datos.length + n) : n);
   return datos.slice(cantidad.startsWith('+') ? Math.max(0, n - 1) : Math.max(0, datos.length - Math.abs(n)));
 }
-for (const nombre of ['head', 'tail']) R(nombre, 'Muestra ' + (nombre === 'head' ? 'el principio' : 'el final') + ' de un archivo.',
+for (const nombre of ['head', 'tail']) R(nombre, traducir("shell.muestra") + (nombre === 'head' ? traducir("shell.el_principio") : traducir("shell.el_final")) + traducir("shell.de_un_archivo"),
   [nombre + ' nota.txt', nombre + ' -n 1 nota.txt'], c => {
     let abreviada;
     const argumentos = c.args.map((a, i) => {
@@ -52,15 +53,15 @@ for (const nombre of ['head', 'tail']) R(nombre, 'Muestra ' + (nombre === 'head'
       (modo === 'c' ? 'bytes' : 'lines') + ": '" + cantidad + "'");
     let vistos = 0;
     archivos(c, args, (texto, archivo, total) => {
-      if (total > 1) c.out((vistos++ ? '\n' : '') + '==> ' + (archivo === '-' ? 'standard input' : archivo) + ' <==\n');
+      if (total > 1) c.out((vistos++ ? '\n' : '') + '==> ' + (archivo === '-' ? "standard input" : archivo) + ' <==\n');
       if (modo === 'c') {
         const bytes = recortar(nombre, new TextEncoder().encode(texto), cantidad);
         try { c.out(new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes)); }
-        catch { c.error(nombre + ': el corte deja una secuencia UTF-8 incompleta.'); }
+        catch { c.error(nombre + traducir("shell.el_corte_deja_una_secuencia")); }
       } else c.out(recortar(nombre, lineas(texto), cantidad).join(''));
     });
-  }, { '-n N': 'selecciona N líneas', '-c N': 'selecciona N bytes', '-N': 'forma abreviada' });
-R('wc', 'Cuenta líneas, palabras y bytes.', ['wc nota.txt', 'wc -l nota.txt'], c => {
+  }, { '-n N': traducir("shell.selecciona_n_lineas"), '-c N': traducir("shell.selecciona_n_bytes"), '-N': traducir("shell.forma_abreviada") });
+R('wc', traducir("shell.cuenta_lineas_palabras_y_bytes"), ['wc nota.txt', "wc -l nota.txt"], c => {
   const { args, flags } = opciones(c, 'lwc');
   const seleccion = ['l', 'w', 'c'].filter(k => flags[k] || !Object.keys(flags).length);
   const registros = [];
@@ -78,14 +79,14 @@ R('wc', 'Cuenta líneas, palabras y bytes.', ['wc nota.txt', 'wc -l nota.txt'], 
   for (const [numeros, nombre] of registros) {
     c.out(numeros.map(n => String(n).padStart(ancho)).join(' ') + (nombre ? ' ' + nombre : '') + '\n');
   }
-}, { '-l': 'líneas', '-w': 'palabras', '-c': 'bytes UTF-8' });
+}, { '-l': traducir("shell.lineas"), '-w': traducir("shell.palabras"), '-c': traducir("shell.bytes_utf_8") });
 function claveOrden(texto, flags) {
   if (!flags.k) return texto;
   const campos = flags.t ? texto.split(flags.t) : texto.match(/\s*\S+/g) || [];
   const [desde, hasta] = flags.k.split(',').map(Number);
   return campos.slice(desde - 1, hasta || campos.length).join(flags.t || '');
 }
-R('sort', 'Ordena líneas.', ['sort nombres.txt', 'sort -rn puntos.txt'], c => {
+R('sort', traducir("shell.ordena_lineas"), ['sort nombres.txt', "sort -rn puntos.txt"], c => {
   const { args, flags } = opciones(c, 'rnu', 'kt');
   if (flags.t && [...flags.t].length !== 1) return c.invalido('-t');
   if (flags.k && !/^[1-9]\d*(?:,[1-9]\d*)?$/.test(flags.k)) return c.invalido('-k');
@@ -101,8 +102,8 @@ R('sort', 'Ordena líneas.', ['sort nombres.txt', 'sort -rn puntos.txt'], c => {
   datos.forEach((dato, i) => {
     if (!flags.u || !i || comparar(datos[i - 1], dato)) c.out(dato + '\n');
   });
-}, { '-r': 'orden inverso', '-n': 'orden numérico', '-u': 'una fila por clave', '-k N': 'campo inicial', '-t C': 'separador' });
-R('uniq', 'Agrupa líneas iguales consecutivas.', ['sort nombres.txt | uniq', 'uniq -c nombres.txt'], c => {
+}, { '-r': traducir("shell.orden_inverso"), '-n': traducir("shell.orden_numerico"), '-u': traducir("shell.una_fila_por_clave"), '-k N': traducir("shell.campo_inicial"), '-t C': traducir("shell.separador") });
+R('uniq', traducir("shell.agrupa_lineas_iguales_consecutivas"), ['sort nombres.txt | uniq', "uniq -c nombres.txt"], c => {
   const { args, flags } = opciones(c, 'cd');
   if (args.length > 1) return c.invalido(args[1]);
   archivos(c, args, texto => {
@@ -114,8 +115,8 @@ R('uniq', 'Agrupa líneas iguales consecutivas.', ['sort nombres.txt | uniq', 'u
       i = j;
     }
   });
-}, { '-c': 'cuenta cada grupo', '-d': 'muestra grupos repetidos' });
-R('cut', 'Selecciona campos de cada línea.', ["cut -d' ' -f2 datos.txt", 'cut -d: -f1,3 datos.txt'], c => {
+}, { '-c': traducir("shell.cuenta_cada_grupo"), '-d': traducir("shell.muestra_grupos_repetidos") });
+R('cut', traducir("shell.selecciona_campos_de_cada_linea"), ["cut -d' ' -f2 datos.txt", 'cut -d: -f1,3 datos.txt'], c => {
   const { args, flags } = opciones(c, '', 'dfc');
   const lista = flags.c ?? flags.f;
   if (!lista || (flags.c && (flags.f || flags.d))) return c.invalido(flags.c ? '-c' : '-f');
@@ -125,19 +126,19 @@ R('cut', 'Selecciona campos de cada línea.', ["cut -d' ' -f2 datos.txt", 'cut -
   const divisor = flags.d ?? '\t';
   if ([...divisor].length !== 1) return c.invalido('-d');
   const rangos = lista.split(',').map(r => r.includes('-') ? r.split('-') : [r, r]);
-  if (rangos.some(([a, b]) => b && Number(a) > Number(b))) return c.error('cut: invalid decreasing range');
+  if (rangos.some(([a, b]) => b && Number(a) > Number(b))) return c.error("cut: invalid decreasing range");
   const elegir = (_, i) => rangos.some(([a, b]) => i + 1 >= Number(a || 1) && i + 1 <= (b ? Number(b) : Infinity));
   archivos(c, args, texto => {
     for (const fila of filas(texto)) {
       if (flags.c) {
         const bytes = new TextEncoder().encode(fila).filter(elegir);
         try { c.out(new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes) + '\n'); }
-        catch { c.error('cut: el corte deja una secuencia UTF-8 incompleta.'); }
+        catch { c.error(traducir("shell.cut_el_corte_deja_una")); }
       } else if (!fila.includes(divisor)) c.out(fila + '\n');
       else c.out(fila.split(divisor).filter(elegir).join(divisor) + '\n');
     }
   });
-}, { '-d C': 'separador de campos', '-f N': 'campos que se conservan', '-c N': 'posiciones que se conservan' });
+}, { '-d C': traducir("shell.separador_de_campos"), '-f N': traducir("shell.campos_que_se_conservan"), '-c N': traducir("shell.posiciones_que_se_conservan") });
 function conjunto(texto) {
   const escapes = { n: '\n', t: '\t', r: '\r', '\\': '\\' };
   const chars = Array.from(texto.replace(/\\([ntr\\])/g, (_, c) => escapes[c]));
@@ -150,15 +151,15 @@ function conjunto(texto) {
   }
   return salida;
 }
-R('tr', 'Sustituye o elimina caracteres de la entrada.', ['echo hola | tr a-z A-Z', "echo faro | tr -d 'a'"], c => {
+R('tr', traducir("shell.sustituye_o_elimina_caracteres_de_la"), ['echo hola | tr a-z A-Z', "echo faro | tr -d 'a'"], c => {
   const { args, flags } = opciones(c, 'd');
   if (args.length !== (flags.d ? 1 : 2) || !args[0] || (!flags.d && !args[1])) return c.invalido('tr');
   const origen = conjunto(args[0]);
   const destino = flags.d ? [] : conjunto(args[1]);
   const mapa = new Map(origen.map((letra, i) => [letra, destino[Math.min(i, destino.length - 1)] ?? '']));
   c.out(Array.from(c.entrada, letra => mapa.get(letra) ?? letra).join(''));
-}, { '-d': 'elimina los caracteres del conjunto' });
-R('file', 'Identifica archivos y carpetas.', ['file nota.txt', 'file .'], c => {
+}, { '-d': traducir("shell.elimina_los_caracteres_del_conjunto") });
+R('file', traducir("shell.identifica_archivos_y_carpetas"), ['file nota.txt', 'file .'], c => {
   const { args } = opciones(c);
   const ancho = Math.max(0, ...args.map(a => a.length));
   for (const arg of args) {

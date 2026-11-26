@@ -1,8 +1,14 @@
 'use strict';
 const Py = require('../js/curso/py/interprete');
 const { terminar } = require('../js/curso/validar');
-const temas = require('./datos-curso');
-const bateria = [...require('./fragmentos-curso'), ...require('./fragmentos-curso-2')];
+const args = process.argv.slice(2);
+const idioma = args[1] ?? 'es';
+if (args.length && (args.length !== 2 || args[0] !== '--idioma' || !['es', 'en'].includes(idioma))) {
+  process.stderr.write('Uso: node pruebas/exportar-fragmentos.js [--idioma es|en]\n');
+  process.exit(1);
+}
+const temas = require('./datos-curso')[idioma];
+const bateria = idioma === 'es' ? [...require('./fragmentos-curso'), ...require('./fragmentos-curso-2')] : [];
 const fragmentos = bateria.map(({ id, codigo, salida, error, entradas = [], aleatorios = [] }) =>
   ({ id, codigo, salida, error, entradas, aleatorios }));
 function añadir(id, codigo, { entradas = [], aleatorios } = {}) {
@@ -40,8 +46,10 @@ function exportarEjercicio(ejercicio, nombre, codigo) {
   casos.forEach((caso, i) => añadir(id + '-caso-' + (i + 1), caso.codigo, caso));
   (ejercicio.pruebas || []).forEach((p, i) => añadir(id + '-prueba-' + (i + 1), codigo + '\n' + p.codigo));
 }
-for (const ejercicio of require('./datos-ejercicios')) {
-  exportarEjercicio(ejercicio, 'solucion', ejercicio.solucion);
-  if (ejercicio.alternativa) exportarEjercicio(ejercicio, 'alternativa', ejercicio.alternativa);
+if (idioma === 'es') {
+  for (const ejercicio of require('./datos-ejercicios')) {
+    exportarEjercicio(ejercicio, 'solucion', ejercicio.solucion);
+    if (ejercicio.alternativa) exportarEjercicio(ejercicio, 'alternativa', ejercicio.alternativa);
+  }
 }
 process.stdout.write('[\n' + fragmentos.map(f => '  ' + JSON.stringify(f)).join(',\n') + '\n]\n');

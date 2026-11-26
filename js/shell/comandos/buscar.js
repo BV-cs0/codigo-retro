@@ -1,30 +1,34 @@
 (function (CR) {
 'use strict';
+const traducir = typeof module !== 'undefined' ? require('../../comun/idioma').t : globalThis.CR.t;
 const Shell = CR.Shell = CR.Shell || {};
 const { S, registrar: R, opciones, recorrer, filas } = typeof module !== 'undefined' ? require('./base') : Shell.Base;
+function ejecutarFind(c, args) {
+  const fin = args.indexOf(';');
+  if (fin < 1) c.invalido('-exec');
+  const [nombre, ...plantilla] = args.splice(0, fin + 1).slice(0, -1);
+  const ejecutar = Shell.Base.comandos[nombre];
+  if (!ejecutar || ['bash', 'find', 'clear', 'cd', 'ssh', 'exit'].includes(nombre)) c.invalido('-exec ' + nombre);
+  return ruta => {
+    const codigo = c.codigo;
+    try {
+      c.codigo = 0;
+      ejecutar({
+        ...c, nombre, args: plantilla.map(a => a.replaceAll('{}', ruta)),
+        get codigo() { return c.codigo; },
+        set codigo(valor) { c.codigo = valor; }
+      });
+      return c.codigo === 0;
+    } finally { c.codigo = codigo; }
+  };
+}
 function filtroFind(c, args) {
   const filtros = [];
   let profundidad = Infinity;
   while (args.length) {
     const op = args.shift();
     if (op === '-exec') {
-      const fin = args.indexOf(';');
-      if (fin < 1) c.invalido(op);
-      const [nombre, ...plantilla] = args.splice(0, fin + 1).slice(0, -1);
-      const ejecutar = Shell.Base.comandos[nombre];
-      if (!ejecutar || ['bash', 'find', 'clear', 'cd'].includes(nombre)) c.invalido(op + ' ' + nombre);
-      filtros.push(ruta => {
-        const codigo = c.codigo;
-        try {
-          c.codigo = 0;
-          ejecutar({
-            ...c, nombre, args: plantilla.map(a => a.replaceAll('{}', ruta)),
-            get codigo() { return c.codigo; },
-            set codigo(valor) { c.codigo = valor; }
-          });
-          return c.codigo === 0;
-        } finally { c.codigo = codigo; }
-      });
+      filtros.push(ejecutarFind(c, args));
       filtros.exec = true;
       continue;
     }
@@ -34,22 +38,26 @@ function filtroFind(c, args) {
       const sensible = op === '-name';
       const regex = S.patron(sensible ? valor : valor.toLowerCase());
       filtros.push(r => regex.test(sensible ? S.nombre(r) : S.nombre(r).toLowerCase()));
-    } else if (op === '-type' && ['d', 'f'].includes(valor)) {
-      filtros.push((_, n) => n.carpeta === (valor === 'd'));
+    } else if (op === '-type' && ['d', 'f', 'l'].includes(valor)) {
+      filtros.push((_, n) => (n.enlace !== undefined ? 'l' : n.carpeta ? 'd' : 'f') === valor);
+    } else if (op === '-user' && valor) filtros.push((_, n) => n.dueno === valor);
+    else if (op === '-perm' && ['-4000', '-o+w'].includes(valor)) {
+      filtros.push((_, n) => valor === '-4000' ? n.suid : n.permisos[7] === 'w');
     } else if (op === '-maxdepth' && /^\d+$/.test(valor)) profundidad = Number(valor);
     else if (op === '-empty') filtros.push((r, n) => n.carpeta ? !c.fs.listar(c.ruta(r)).length : !n.contenido);
-    else if (op === '-size' && /^[+-]?\d+[kc]$/.test(valor)) {
+    else if (op === '-size' && /^[+-]?\d+[kcM]$/.test(valor)) {
       const cantidad = Math.abs(parseInt(valor, 10));
       filtros.push((_, n) => {
-        const bytes = n.carpeta ? 4096 : S.bytes(n.contenido);
-        const real = Math.ceil(bytes / (valor.endsWith('k') ? 1024 : 1));
+        const bytes = Shell.Espacio?.tamano(n) ?? (n.carpeta ? 4096 : S.bytes(n.contenido));
+        const real = Math.ceil(bytes / ({ k: 1024, M: 1048576, c: 1 }[valor.at(-1)]));
         return valor.startsWith('+') ? real > cantidad : valor.startsWith('-') ? real < cantidad : real === cantidad;
       });
     } else c.invalido(op);
   }
   return { filtros, profundidad };
 }
-R('find', 'Busca rutas por nombre, tipo o tamaño.', ['find /srv -name "*.txt"', 'find . -type d -empty'], c => {
+R('find', traducir("shell.busca_rutas_por_nombre_tipo"), ['find /srv -name "*.txt"', 'find . -type d -empty',
+  'find /var/log -type f -size +50M', 'find / -perm -4000 -user root', 'find . -perm -o+w'], c => {
   const args = [...c.args];
   const raices = [];
   while (args.length && !args[0].startsWith('-')) raices.push(args.shift());
@@ -59,9 +67,10 @@ R('find', 'Busca rutas por nombre, tipo o tamaño.', ['find /srv -name "*.txt"',
       if (filtros.every(f => f(ruta, nodo)) && !filtros.exec) c.out(ruta + '\n');
     });
   }
-}, { '-name P': 'patrón de nombre', '-iname P': 'ignora mayúsculas', '-type f/d': 'archivo o carpeta',
-  '-size N': 'tamaño en k o c', '-maxdepth N': 'límite de profundidad', '-empty': 'entradas vacías',
-  '-exec ORDEN {} \\;': 'ejecuta una orden simulada por coincidencia' });
+}, { '-name P': traducir("shell.patron_de_nombre"), '-iname P': traducir("shell.ignora_mayusculas"), '-type f/d': traducir("shell.archivo_o_carpeta"),
+  '-perm -4000 / -o+w': idioma => traducir[idioma]('atalaya.perm'), '-user NAME': idioma => traducir[idioma]('atalaya.owner'),
+  '-size N': traducir("faro2.findSize"), '-maxdepth N': traducir("shell.limite_de_profundidad"), '-empty': traducir("shell.entradas_vacias"),
+  '-exec ORDEN {} \\;': traducir("shell.ejecuta_una_orden_simulada_por") });
 function expresion(patron, flags) {
   const texto = flags.F ? patron.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') :
     flags.E ? patron : patron.replace(/\\(.)|([+?|(){}])/g, (m, escape, especial) => {
@@ -81,7 +90,7 @@ function procesar(c, flags, regex, archivo, texto, prefijo) {
   else for (const [fila, n] of coincidencias) c.out(prefijo + (flags.n ? n + ':' : '') + fila + '\n');
   return coincidencias.length > 0;
 }
-R('grep', 'Filtra líneas por un patrón.', ['grep -n tormenta manual.txt', 'grep -ri contraseña /srv'], c => {
+R('grep', traducir("shell.filtra_lineas_por_un_patron"), ['grep -n tormenta manual.txt', 'grep -ri contraseña /srv'], c => {
   const { args, flags } = opciones(c, 'hinrcvlwExF');
   if (!args.length) return c.invalido('grep');
   const patron = args.shift();
@@ -102,7 +111,7 @@ R('grep', 'Filtra líneas por un patrón.', ['grep -n tormenta manual.txt', 'gre
     } else leer(ruta, args.length > 1);
   }
   if (!encontrado && !c.codigo) c.codigo = 1;
-}, { '-i': 'ignora mayúsculas', '-n': 'numera las coincidencias', '-r': 'recorre carpetas',
-  '-c': 'cuenta coincidencias', '-v': 'invierte el filtro', '-l': 'solo nombres', '-w': 'palabras completas', '-E': 'expresión extendida' });
+}, { '-i': traducir("shell.ignora_mayusculas"), '-n': traducir("shell.numera_las_coincidencias"), '-r': traducir("shell.recorre_carpetas"),
+  '-c': traducir("shell.cuenta_coincidencias"), '-v': traducir("shell.invierte_el_filtro"), '-l': traducir("shell.solo_nombres"), '-w': traducir("shell.palabras_completas"), '-E': traducir("shell.expresion_extendida") });
 })(globalThis.CR = globalThis.CR || {});
 

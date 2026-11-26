@@ -1,6 +1,10 @@
 (function () {
   'use strict';
-  const { Temas, ProgresoCurso: P, ValidarCurso: V, Py, Editor, MapaCurso, Sonido, Progreso } = window.CR;
+  const traducir = typeof module !== 'undefined' ? require('../comun/idioma').t : globalThis.CR.t;
+  window.CR.Idioma.registrar('es', 'curso', window.CR.Temas);
+  window.CR.Idioma.registrar('en', 'curso', window.CR.TemasEn);
+  const Temas = window.CR.Idioma.contenido('curso');
+  const { ProgresoCurso: P, ValidarCurso: V, Py, Editor, MapaCurso, Sonido, Progreso } = window.CR;
   const $ = id => document.getElementById(id);
   const nodo = (tipo, texto) => Object.assign(document.createElement(tipo), { textContent: texto });
   const boton = (texto, accion) => Object.assign(nodo('button', texto), { onclick: accion });
@@ -26,10 +30,10 @@
       const b = boton('', () => abrir(i, 0));
       const total = t.pasos.filter((_, j) => P.completo(i, j)).length;
       const barra = Object.assign(nodo('progress', ''), { value: total, max: t.pasos.length });
-      barra.setAttribute('aria-label', 'Progreso de ' + t.nombre);
+      barra.setAttribute('aria-label', traducir("curso.progreso_de") + t.nombre);
       b.className = t.proyecto ? 'cartucho dorado' : 'cartucho';
       b.append(nodo('strong', (i + 1) + ' · ' + t.nombre), nodo('span', t.frase), barra,
-        nodo('span', total + ' / ' + t.pasos.length + ' pasos'), nodo('small', 'Necesitas: ' + t.necesita));
+        nodo('span', total + ' / ' + t.pasos.length + traducir("curso.pasos")), nodo('small', traducir("curso.necesitas") + t.necesita));
       return b;
     }));
     if (enfocar) $('continuar').focus();
@@ -45,7 +49,7 @@
       const hecho = P.completo(tema, i);
       if (hecho) b.className = 'completo';
       if (i === paso) b.setAttribute('aria-current', 'step');
-      b.setAttribute('aria-label', 'Paso ' + (i + 1) + ', ' + p.titulo + (hecho ? ', completado' : ''));
+      b.setAttribute('aria-label', traducir("curso.paso") + (i + 1) + ', ' + p.titulo + (hecho ? traducir("curso.completado") : ''));
       return b;
     }));
   }
@@ -55,7 +59,7 @@
   }
   function resumen() {
     $('chuleta').replaceChildren(...ficha.chuleta.flatMap(([c, t]) => [parrafo('\x60' + c + '\x60', 'dt'), nodo('dd', t)]));
-    $('siguiente-tema').textContent = Temas[tema + 1] ? 'Siguiente tema → ' + Temas[tema + 1].nombre : 'Ver final del curso';
+    $('siguiente-tema').textContent = Temas[tema + 1] ? traducir("curso.siguiente_tema_2") + Temas[tema + 1].nombre : traducir("curso.ver_final_del_curso");
     $('codigo-final').hidden = !ficha.final;
     if (ficha.final) {
       $('codigo-final').textContent = ficha.final;
@@ -67,15 +71,16 @@
   function finalCurso() {
     $('paso-curso').hidden = true;
     $('final-curso').hidden = false;
-    $('progreso-final').textContent = P.total() + ' / ' + P.cantidad + ' pasos completados.';
+    $('progreso-final').textContent = P.total() + ' / ' + P.cantidad + traducir("curso.pasos_completados");
     const titulo = $('letras-final').getContext('2d');
-    window.CR.Pixel.texto(titulo, 'FINAL DEL CURSO', 3, 3, 2, '#fff0a9');
+    if (document.documentElement.lang === 'en') $('letras-final').width = 198;
+    window.CR.Pixel.texto(titulo, traducir("curso.final_del_curso"), 3, 3, 2, '#fff0a9');
     $('progreso-temas').replaceChildren(...Temas.map((t, i) => {
       const hechos = t.pasos.filter((_, j) => P.completo(i, j)).length;
       const li = nodo('li', '');
       const barra = Object.assign(nodo('progress', ''), { value: hechos, max: t.pasos.length });
-      barra.setAttribute('aria-label', 'Progreso de ' + t.nombre);
-      li.append(nodo('strong', t.nombre), barra, nodo('span', hechos + ' / ' + t.pasos.length + ' pasos'));
+      barra.setAttribute('aria-label', traducir("curso.progreso_de") + t.nombre);
+      li.append(nodo('strong', t.nombre), barra, nodo('span', hechos + ' / ' + t.pasos.length + traducir("curso.pasos")));
       return li;
     }));
     $('titulo-final').focus();
@@ -116,7 +121,7 @@
     $('indice').hidden = true;
     $('final-curso').hidden = true;
     $('paso-curso').hidden = $('temas').hidden = false;
-    $('posicion').textContent = Temas[t].nombre + ' · Paso ' + (i + 1) + ' de ' + Temas[t].pasos.length;
+    $('posicion').textContent = Temas[t].nombre + traducir("curso.paso_2") + (i + 1) + traducir("comun.de") + Temas[t].pasos.length;
     $('titulo-paso').textContent = ficha.titulo;
     const cerrar = ficha.tipo === 'resumen';
     $('resumen').hidden = !cerrar;
@@ -145,7 +150,7 @@
   function dibujar() {
     $('mapa').hidden = !partida;
     if (!partida) return;
-    const mapas = { robot: 'Mapa de Pico en la mina', mago: 'Mapa de Brasa', granja: 'Mapa de Bina en la granja' };
+    const mapas = { robot: traducir("curso.mapa_de_pico_en_la"), mago: traducir("curso.mapa_de_brasa"), granja: traducir("curso.mapa_de_bina_en_la") };
     $('mapa').setAttribute('aria-label', mapas[ficha.mundo.demo]);
     MapaCurso($('mapa'), ficha.mundo.demo, partida.motor.estado);
   }
@@ -171,7 +176,7 @@
     $('estado').textContent = $('error-consola').textContent = '';
     $('error-original').textContent = '';
     $('casos').hidden = true;
-    mostrar({ variables: {}, llamadas: ['programa principal'] });
+    mostrar({ variables: {}, llamadas: [traducir("curso.programa_principal")] });
   }
   function controles() {
     const pendiente = ficha?.tipo === 'predice' && respuesta === null;
@@ -197,13 +202,13 @@
   function terminar(estado) {
     const error = estado.error;
     if (error) {
-      $('error-consola').textContent = error.tipo + ' (línea ' + error.linea + ')\n' + error.mensaje;
+      $('error-consola').textContent = error.tipo + traducir("curso.linea") + error.linea + ')\n' + error.mensaje;
       $('error-original').textContent = error.tipo + ': ' + (error.original ?? error.mensaje);
       editor.destacar(error.linea, error.tipo);
       Sonido.tocar('choque');
     }
     if (ficha.tipo === 'predice' && respuesta !== null) {
-      $('respuesta').replaceChildren(...parrafo((respuesta === ficha.correcta ? 'Correcto. ' : 'Casi. ') + ficha.explicacion).childNodes);
+      $('respuesta').replaceChildren(...parrafo((respuesta === ficha.correcta ? traducir("curso.correcto_3") : traducir("curso.casi")) + ficha.explicacion).childNodes);
       completar();
     } else if (ficha.tipo === 'explica') {
       completar();
@@ -213,7 +218,7 @@
     detener();
   }
   function resultadoReto(mensaje) {
-    $('estado').textContent = mensaje || 'Objetivo cumplido.';
+    $('estado').textContent = mensaje || traducir("curso.objetivo_cumplido");
     if (mensaje) {
       intentos++;
       $('solucion').hidden = intentos < 2;
@@ -225,19 +230,19 @@
   }
   function comprobar() {
     const resultado = V.comprobar(ficha, editor.texto());
-    const representar = texto => texto === undefined ? 'Sin línea' : JSON.stringify(texto);
+    const representar = texto => texto === undefined ? traducir("curso.sin_linea") : JSON.stringify(texto);
     $('filas-casos').replaceChildren(...resultado.filas.map(f => {
       const fila = nodo('tr', '');
-      const detalle = nodo('td', f.mensaje || (f.ok ? 'Coincide' : ''));
+      const detalle = nodo('td', f.mensaje || (f.ok ? traducir("curso.coincide") : ''));
       if (f.diferencia) {
-        const diferencia = nodo('mark', 'Esperado ' + representar(f.esperada) + '\nObtenido ' + representar(f.obtenida));
+        const diferencia = nodo('mark', traducir("curso.esperado") + representar(f.esperada) + traducir("curso.obtenido") + representar(f.obtenida));
         detalle.append(diferencia);
       }
       fila.append(nodo('td', f.ok ? '✓' : '✗'), nodo('td', f.entradas.map(representar).join(', ') || '—'), detalle);
       return fila;
     }));
     $('casos').hidden = false;
-    resultadoReto(resultado.ok ? '' : 'Revisa los casos marcados con ✗.');
+    resultadoReto(resultado.ok ? '' : traducir("curso.revisa_los_casos_marcados_con"));
   }
   function esperar(activo) {
     esperando = activo;
@@ -314,7 +319,7 @@
   $('parar').onclick = () => {
     detener();
     editor.destacar(0);
-    $('estado').textContent = 'Ejecución detenida.';
+    $('estado').textContent = traducir("comun.ejecucion_detenida");
     $('ejecutar').focus();
   };
   $('restaurar').onclick = () => {
@@ -331,7 +336,7 @@
     P.guardarCodigo(tema, paso, ficha.solucion);
     $('codigo').focus();
   };
-  function sonido() { $('sonido').textContent = Progreso.silencio() ? 'Activar sonido' : 'Silenciar'; }
+  function sonido() { $('sonido').textContent = Progreso.silencio() ? traducir("comun.activar_sonido") : traducir("comun.silenciar"); }
   $('sonido').onclick = () => {
     Progreso.guardarSilencio(!Progreso.silencio());
     Sonido.activar();

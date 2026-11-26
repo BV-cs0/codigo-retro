@@ -128,4 +128,22 @@ for (const [linea, error, codigo = 1, opciones] of [
   ['echo a &&', 'bash: Falta un comando.', 2]
 ]) caso(linea, '', { error: error + '\n', codigo, ...opciones });
 
-module.exports = { casos, HOME };
+const { identidad } = require('../js/shell/sfa');
+const palabras = { aprendiz: 'apprentice', uno: 'one', DOS: 'TWO', dos: 'two', fin: 'end',
+  vacío: 'zero', datos: 'data', repite: 'repeat', nota: 'note', oculto: 'hidden', hueco: 'hollow', á: 'OK',
+  hola: 'hello', mundo: 'world', palabras: 'words', tres: 'three', cuatro: 'four', siguiente: 'next', findos: 'endtwo', finx: 'endx',
+  nunca: 'never', ausente: 'absent', sí: 'yes', sola: 'alone', sol: 'sun', parasol: 'sunshade',
+  Uno: 'One', gato: 'cat', grande: 'large', chico: 'small', abrir: 'open', cerrar: 'close',
+  nuevo: 'new', noexiste: 'missing', silencio: 'silence', primero: 'first', segundo: 'second',
+  fallos: 'errors', comentario: 'comment' };
+function traducir(texto) {
+  return texto.replace(/\\[nt]|\p{L}+/gu, palabra => Object.hasOwn(palabras, palabra) ? palabras[palabra] : palabra);
+}
+function casosIngles() {
+  return casos.filter(c => c.bash).map(c => ({ ...c, idioma: 'en', cwd: identidad('en').home,
+    fs: Object.fromEntries(Object.entries(c.fs).map(([ruta, contenido]) =>
+      [traducir(ruta), contenido === null ? null : traducir(contenido)])),
+    linea: traducir(c.linea),
+    salida: traducir(c.salida) }));
+}
+module.exports = { casos, casosIngles, HOME };

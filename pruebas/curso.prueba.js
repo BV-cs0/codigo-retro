@@ -26,14 +26,23 @@ function probarFragmentos(prueba) {
     assert.equal(programa.paso('').salida, 'uno \n');
   });
 }
-function probarTemas(prueba) {
-  prueba('Curso · 114 pasos en once temas', () => {
-    assert.deepEqual(temas.map(t => t.pasos.length), [8, 9, 10, 11, 9, 20, 10, 9, 9, 9, 10]);
+function salidaPredicha(p, r, idioma) {
+  if (p.error === 'RuntimeError') return idioma === 'en' ? 'The course stops the loop' : 'El curso detiene el bucle';
+  return r.error?.tipo || V.normal(r.salida) || (idioma === 'en' ? 'Nothing' : 'Nada');
+}
+function probarTemas(prueba, idioma) {
+  const lista = temas[idioma];
+  prueba('Curso · 114 pasos en once temas · ' + idioma, () => {
+    assert.deepEqual(lista.map(t => t.pasos.length), [8, 9, 10, 11, 9, 20, 10, 9, 9, 9, 10]);
   });
-  for (const t of temas) t.pasos.forEach((p, i) => prueba(t.nombre + ' · ' + (i + 1) + ' · ' + p.titulo, () => {
+  for (const t of lista) t.pasos.forEach((p, i) => prueba(t.nombre + ' · ' + (i + 1) + ' · ' + p.titulo, () => {
     if (p.tipo === 'resumen') {
       assert.equal(i, t.pasos.length - 1);
       assert.ok(p.chuleta.length >= 5 && p.chuleta.length <= 8);
+      if (p.final) {
+        const resultado = V.comprobar(t.pasos[i - 1], p.final);
+        assert.equal(resultado.ok, true, JSON.stringify(resultado.filas));
+      }
     } else if (p.casos) {
       const previo = t.pasos[i - 1];
       const inicial = p.codigo === 'anterior' ? previo.solucion ?? previo.codigo : p.codigo;
@@ -42,7 +51,7 @@ function probarTemas(prueba) {
       assert.equal(V.comprobar(p, inicial).ok, false);
     } else if (p.solucion !== undefined) {
       const comprobar = codigo => {
-        const partida = V.mundo(p.mundo);
+        const partida = V.mundo(p.mundo, idioma);
         const programa = Py.ejecutar(codigo, { integradas: partida?.integradas });
         const estado = V.terminar(programa);
         return [V.evaluar(p, programa, estado, partida), estado.error?.tipo];
@@ -56,11 +65,43 @@ function probarTemas(prueba) {
       assert.equal(r.error?.tipo, p.error);
       if (p.tipo === 'predice') {
         assert.equal(p.opciones.length, 3);
-        const texto = p.error === 'RuntimeError' ? 'El curso detiene el bucle' : r.error?.tipo || V.normal(r.salida) || 'Nada';
-        assert.equal(p.opciones[p.correcta], texto);
+        assert.equal(p.opciones[p.correcta], salidaPredicha(p, r, idioma));
       }
     }
   }));
+}
+const camposTraducidos = new Set(['nombre', 'frase', 'necesita', 'titulo', 'texto', 'objetivo', 'pistas',
+  'recuerda', 'etiqueta', 'pregunta', 'opciones', 'explicacion', 'chuleta', 'codigo', 'solucion', 'final',
+  'entradas', 'salida', 'salidaEsperada']);
+
+function estructura(valor, traducido = false) {
+  if (Array.isArray(valor)) return valor.map(v => estructura(v, traducido));
+  if (valor && typeof valor === 'object') {
+    return Object.fromEntries(Object.entries(valor).map(([k, v]) =>
+      [k, estructura(v, camposTraducidos.has(k))]));
+  }
+  if (traducido && typeof valor === 'string' && valor !== 'anterior') return valor ? 'string' : '';
+  return valor;
+}
+function textos(valor, traducido = false) {
+  if (Array.isArray(valor)) return valor.flatMap(v => textos(v, traducido));
+  if (valor && typeof valor === 'object') {
+    return Object.entries(valor).flatMap(([k, v]) => textos(v, camposTraducidos.has(k)));
+  }
+  return traducido && typeof valor === 'string' ? [valor] : [];
+}
+function probarTraduccion(prueba) {
+  prueba('Idiomas · estructura del Curso de Python', () => {
+    assert.deepEqual(estructura(temas.en), estructura(temas.es));
+  });
+  prueba('Idiomas · textos en inglés del Curso de Python', () => {
+    for (const tema of temas.en) {
+      for (const texto of textos(tema)) {
+        const sinNombres = texto.replace(/Código Retro|Lumen|Pico|Brasa|Bina|Cursor/g, '');
+        assert.doesNotMatch(sinNombres, /[áéíóúüñ¿¡]|\b(?:que|el|los|las|hola|pista|salida|numero|intentos)\b/iu, tema.nombre);
+      }
+    }
+  });
 }
 function probarEstado(prueba) {
   prueba('Curso · línea siguiente, variables y llamadas activas', () => {
@@ -118,7 +159,9 @@ function probarLimites(prueba) {
 }
 module.exports = prueba => {
   probarFragmentos(prueba);
-  probarTemas(prueba);
+  probarTemas(prueba, 'es');
+  probarTemas(prueba, 'en');
+  probarTraduccion(prueba);
   probarEstado(prueba);
   probarLimites(prueba);
 };

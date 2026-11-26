@@ -41,6 +41,11 @@ button:disabled { opacity: .55; cursor: default; }
 .barra h1 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
 .barra p, #mapas-info { color: var(--suave); }
 .barra nav, .cabecera-partida { display: flex; align-items: center; flex-wrap: wrap; gap: .65rem; }
+.selector-idioma { display: inline-flex; align-items: center; gap: .35rem; white-space: nowrap; }
+.selector-idioma button { min-width: 2.5rem; padding: .3rem .45rem; }
+.selector-idioma [aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: #1a1520; }
+.inicio .selector-idioma { display: flex; justify-content: flex-end; margin-top: .7rem; }
+html[lang="en"] #letras-final { max-width: 100%; height: auto; }
 .cabecera-partida { margin-block: .9rem .7rem; }
 .cabecera-partida button { margin-left: auto; }
 .estrellas { color: #ffda75; font-size: 1.3rem; letter-spacing: .14em; }

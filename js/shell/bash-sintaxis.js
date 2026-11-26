@@ -1,5 +1,6 @@
 (function (S) {
 'use strict';
+const traducir = typeof module !== 'undefined' ? require('../comun/idioma').t : globalThis.CR.t;
 const palabra = t => t?.partes?.length === 1 && t.partes[0].modo === 'libre' ? t.partes[0].texto : t?.valor;
 class Parser extends S.Analizador.Analizador {
   es(...ops) { return ops.includes(palabra(this.mirar())); }
@@ -31,10 +32,10 @@ class Parser extends S.Analizador.Analizador {
       const variable = this.tomar();
       if (variable?.tipo === 'aritmetica') {
         nodo.formulas = variable.texto.split(';');
-        if (nodo.formulas.length !== 3) throw new Error('Cabecera aritmética incorrecta.');
+        if (nodo.formulas.length !== 3) throw new Error(traducir("shell.cabecera_aritmetica_incorrecta"));
       } else {
         nodo.variable = palabra(variable);
-        if (!/^[A-Za-z_]\w*$/.test(nodo.variable || '')) throw new Error('Variable de bucle incorrecta.');
+        if (!/^[A-Za-z_]\w*$/.test(nodo.variable || '')) throw new Error(traducir("shell.variable_de_bucle_incorrecta"));
         if (this.es('in')) {
           this.tomar();
           nodo.valores = [];
@@ -49,7 +50,7 @@ class Parser extends S.Analizador.Analizador {
     if (['<', '<<'].includes(this.mirar()?.valor)) {
       const op = this.tomar();
       nodo.entrada = { ...op, destino: this.tomar() };
-      if (nodo.entrada.destino?.tipo !== 'palabra') throw new Error('Falta el destino de la redirección.');
+      if (nodo.entrada.destino?.tipo !== 'palabra') throw new Error(traducir("shell.falta_el_destino_de_la"));
     }
     return nodo;
   }
@@ -64,7 +65,7 @@ class Parser extends S.Analizador.Analizador {
       do {
         if (patrones.length) this.tomar();
         const t = this.tomar();
-        if (t?.tipo !== 'palabra') throw new Error('Falta un patrón de case.');
+        if (t?.tipo !== 'palabra') throw new Error(traducir("shell.falta_un_patron_de_case"));
         patrones.push(t);
       } while (this.es('|'));
       this.exigir(')');
@@ -78,7 +79,7 @@ class Parser extends S.Analizador.Analizador {
   funcion() {
     if (this.es('function')) this.tomar();
     const nombre = palabra(this.tomar());
-    if (!/^[A-Za-z_]\w*$/.test(nombre || '')) throw new Error('Nombre de función incorrecto.');
+    if (!/^[A-Za-z_]\w*$/.test(nombre || '')) throw new Error(traducir("shell.nombre_de_funcion_incorrecto"));
     if (this.es('(')) { this.tomar(); this.exigir(')'); }
     this.saltar(); this.exigir('{');
     const cuerpo = this.bloque('}');
@@ -90,9 +91,9 @@ class Parser extends S.Analizador.Analizador {
     if (this.es('if')) return this.ramas();
     if (this.es('for', 'while', 'until')) return this.bucle();
     if (this.es('case')) return this.casos();
-    if (this.es('select')) throw Object.assign(new Error('select no está en este simulador'), { linea: token.linea });
+    if (this.es('select')) throw Object.assign(new Error(traducir("shell.select_no_esta_en_este")), { linea: token.linea });
     if (this.tokens[this.indice + 1]?.valor === '(' && /=$/.test(palabra(token) ?? ''))
-      throw Object.assign(new Error('Los arrays no están en este simulador'), { linea: token.linea });
+      throw Object.assign(new Error(traducir("shell.los_arrays_no_estan_en")), { linea: token.linea });
     if (this.es('function') || this.tokens[this.indice + 1]?.valor === '(') return this.funcion();
     if (['aritmetica', 'condicion'].includes(token.tipo)) return this.tomar();
     if (this.es('then', 'elif', 'else', 'fi', 'do', 'done', 'esac', '}')) {
@@ -104,7 +105,7 @@ class Parser extends S.Analizador.Analizador {
 function analizar(texto) {
   const tokens = S.Lexico.tokenizar(texto.replace(/\r\n/g, '\n'), true);
   const excluido = tokens.find(t => ['&', '<<<'].includes(t.valor));
-  if (excluido) throw new Error(excluido.valor + ' no está en este simulador');
+  if (excluido) throw new Error(excluido.valor + traducir("shell.no_esta_en_este_simulador_2"));
   return new Parser(tokens, []).bloque();
 }
 S.BashSintaxis = { analizar };

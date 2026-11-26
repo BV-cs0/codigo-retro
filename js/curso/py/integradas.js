@@ -1,10 +1,11 @@
 (function () {
   'use strict';
+  const traducir = typeof module !== 'undefined' ? require('../../comun/idioma').t : globalThis.CR.t;
   const V = typeof module !== 'undefined' ? require('./valores') : window.CR.PyValores;
   const espacios = /[\u0009-\u000d\u001c-\u0020\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/u;
   function aridad(nombre, args, error, min, max = min) {
     if (args.length < min || args.length > max) {
-      error('TypeError', nombre + '() necesita ' + (min === max ? min : 'entre ' + min + ' y ' + max) + ' argumento(s). Has dado ' + args.length + '.');
+      error('TypeError', nombre + traducir("curso.necesita") + (min === max ? min : traducir("curso.entre") + min + traducir("curso.y") + max) + traducir("curso.argumento_s_has_dado") + args.length + '.');
     }
   }
   function normalizarNumero(texto) {
@@ -21,21 +22,21 @@
     if (V.numerico(x)) {
       const n = V.num(x);
       if (t === 'float') return V.float(n);
-      if (!Number.isFinite(n)) error(Number.isNaN(n) ? 'ValueError' : 'OverflowError', 'No se puede convertir ese valor a entero.');
+      if (!Number.isFinite(n)) error(Number.isNaN(n) ? 'ValueError' : 'OverflowError', traducir("curso.no_se_puede_convertir_ese"));
       return Math.trunc(n) || 0;
     }
-    if (typeof x !== 'string') error('TypeError', 'Usa un número o un texto que represente un número.');
+    if (typeof x !== 'string') error('TypeError', traducir("curso.usa_un_numero_o_un"));
     const s = normalizarNumero(x);
     if (t === 'int' && /^[+-]?\d+$/.test(s)) return V.leerEntero(s, error);
     if (t === 'float' && /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(s)) return V.float(Number(s));
     if (t === 'float' && /^[+-]?(?:inf(?:inity)?|nan)$/i.test(s)) return V.float(/nan/i.test(s) ? NaN : s.startsWith('-') ? -Infinity : Infinity);
-    error('ValueError', 'El texto no representa un número válido.',
+    error('ValueError', traducir("curso.el_texto_no_representa_un"),
       (t === 'int' ? 'invalid literal for int() with base 10: ' : 'could not convert string to float: ') + V.repr(x));
   }
   function rango(args, error) {
     const [a, b, paso = 1] = args.map(x => V.entero(x, error));
     const [inicio, fin] = b === undefined ? [0, a] : [a, b];
-    if (!paso) error('ValueError', 'El paso de range() no puede ser cero.');
+    if (!paso) error('ValueError', traducir("curso.el_paso_de_range_no"));
     return { tipo: 'range', inicio, fin, paso, longitud: Math.max(0, Math.ceil((fin - inicio) / paso)) };
   }
   function lista(x, error) {
@@ -68,12 +69,12 @@
     return Number(cociente + 'e' + -p);
   }
   function redondear([x, precision], error) {
-    if (!V.numerico(x)) error('TypeError', 'round() necesita un número.');
+    if (!V.numerico(x)) error('TypeError', traducir("curso.round_necesita_un_numero"));
     const n = V.num(x);
     const p = precision == null ? null : V.entero(precision, error);
     if (!Number.isFinite(n)) return p === null ? convertir(x, 'int', error) : x;
     const magnitud = redondearMagnitud(Math.abs(n), p ?? 0);
-    if (!Number.isFinite(magnitud)) error('OverflowError', 'El resultado de round() es demasiado grande.');
+    if (!Number.isFinite(magnitud)) error('OverflowError', traducir("curso.el_resultado_de_round_es"));
     const resultado = n < 0 || Object.is(n, -0) ? -magnitud : magnitud;
     return p !== null && V.tipo(x) === 'float' ? V.float(resultado) : resultado || 0;
   }
@@ -82,7 +83,7 @@
     if (sep === null) sep = ' ';
     if (end === null) end = '\n';
     if (Object.keys(kw).some(k => k !== 'sep' && k !== 'end') || typeof sep !== 'string' || typeof end !== 'string') {
-      error('TypeError', 'print() admite sep y end como textos o None.');
+      error('TypeError', traducir("curso.print_admite_sep_y_end"));
     }
     let salida = '';
     for (let i = 0; i < args.length; i++) salida = V.limite(salida + (i ? sep : '') + V.str(args[i], error), error);
@@ -96,7 +97,7 @@
       if (x?.tipo === 'range') return x.longitud;
       if (x?.tipo === 'tuple') return x.items.length;
       if (x?.tipo === 'dict' || x?.base?.tipo === 'dict') return (x.base || x).pares.size;
-      e('TypeError', 'Este valor no tiene longitud.');
+      e('TypeError', traducir("curso.este_valor_no_tiene_longitud"));
     }],
     str: [0, 1, ([x = ''], e) => V.str(x, e)],
     int: [0, 1, ([x = 0], e) => convertir(x, 'int', e)],
@@ -104,7 +105,7 @@
     bool: [0, 1, ([x = false]) => V.verdad(x)],
     range: [1, 3, rango],
     abs: [1, 1, ([x], e) => {
-      if (!V.numerico(x)) e('TypeError', 'abs() necesita un número.');
+      if (!V.numerico(x)) e('TypeError', traducir("curso.abs_necesita_un_numero"));
       return V.tipo(x) === 'float' ? V.float(Math.abs(V.num(x))) : Math.abs(V.num(x));
     }],
     max: [1, Infinity, (a, e) => extremo(a, e, 1)],
@@ -115,7 +116,7 @@
       { tipo: 'clase', nombre: x.error.tipo, excepcion: true } : { tipo: 'clase', nombre: V.tipo(x) }],
     list: [0, 1, ([x = []], e) => lista(x, e)],
     ord: [1, 1, ([x], e) => {
-      if (typeof x !== 'string' || [...x].length !== 1) e('TypeError', 'ord() necesita un solo carácter.');
+      if (typeof x !== 'string' || [...x].length !== 1) e('TypeError', traducir("curso.ord_necesita_un_solo_caracter"));
       return x.codePointAt(0);
     }],
     chr: [1, 1, ([x], e) => {
@@ -125,7 +126,7 @@
     }]
   };
   function sumar([x, inicio = 0], error) {
-    if (!V.numerico(inicio)) error('TypeError', 'sum() necesita un valor inicial numérico.');
+    if (!V.numerico(inicio)) error('TypeError', traducir("curso.sum_necesita_un_valor_inicial"));
     if (x?.tipo === 'range') {
       const longitud = BigInt(x.longitud), primero = BigInt(x.inicio), paso = BigInt(x.paso);
       const total = longitud * (2n * primero + (longitud - 1n) * paso) / 2n;
@@ -134,7 +135,7 @@
     }
     let suma = inicio, ajuste = 0;
     for (const v of V.iterable(x, error)) {
-      if (!V.numerico(v)) error('TypeError', 'sum() necesita números.');
+      if (!V.numerico(v)) error('TypeError', traducir("curso.sum_necesita_numeros"));
       if (V.tipo(suma) !== 'float' && V.tipo(v) !== 'float') suma = V.operar('+', suma, v, error);
       else {
         const a = V.num(suma), b = V.num(v), total = a + b;
@@ -155,20 +156,20 @@
       if (!hay || V.ordenar(v, elegido, error) * sentido > 0) elegido = v;
       hay = true;
     }
-    if (!hay) error('ValueError', 'La secuencia está vacía.');
+    if (!hay) error('ValueError', traducir("curso.la_secuencia_esta_vacia"));
     return elegido;
   }
   function buscar(lista, item, error, inicio = 0, fin = lista.length) {
     const ajustar = n => n < 0 ? Math.max(0, lista.length + n) : Math.min(lista.length, n);
     const limite = ajustar(fin);
     for (let i = ajustar(inicio); i < limite; i++) if (V.igual(lista[i], item)) return i;
-    error('ValueError', 'No se encontró ese valor en la lista.');
+    error('ValueError', traducir("curso.no_se_encontro_ese_valor"));
   }
   const metodosLista = {
-    append: [1, 1, (x, [v], e) => { if (x.length === 10000) e('OverflowError', 'La lista está llena.'); x.push(v); return null; }],
-    pop: [0, 1, (x, [i = -1], e) => x.splice(V.posicion(V.entero(i, e), x.length, e, 'La lista'), 1)[0]],
+    append: [1, 1, (x, [v], e) => { if (x.length === 10000) e('OverflowError', traducir("curso.la_lista_esta_llena")); x.push(v); return null; }],
+    pop: [0, 1, (x, [i = -1], e) => x.splice(V.posicion(V.entero(i, e), x.length, e), 1)[0]],
     insert: [2, 2, (x, [i, v], e) => {
-      if (x.length === 10000) e('OverflowError', 'La lista está llena.');
+      if (x.length === 10000) e('OverflowError', traducir("curso.la_lista_esta_llena"));
       x.splice(V.entero(i, e), 0, v);
       return null;
     }],
@@ -177,7 +178,7 @@
     count: [1, 1, (x, [v]) => x.filter(item => V.igual(v, item)).length]
   };
   function texto(x, error) {
-    if (typeof x !== 'string') error('TypeError', 'Se esperaba un texto.');
+    if (typeof x !== 'string') error('TypeError', traducir("curso.se_esperaba_un_texto"));
     return x;
   }
   function reemplazar(x, [a, b, n = -1], e) {
@@ -186,7 +187,7 @@
     n = V.entero(n, e);
     const partes = a ? x.split(a) : ['', ...x, ''];
     const cambiar = n < 0 ? partes.length - 1 : Math.min(n, partes.length - 1);
-    if ((b.length - a.length) * cambiar + x.length > 100000) e('OverflowError', 'El texto supera los 100 000 caracteres.');
+    if ((b.length - a.length) * cambiar + x.length > 100000) e('OverflowError', traducir("curso.el_texto_supera_los_100"));
     return partes.slice(0, cambiar + 1).join(b) + (cambiar + 1 < partes.length ? a + partes.slice(cambiar + 1).join(a) : '');
   }
   function dividirTexto(x, [sep = null, maximo = -1], e) {
@@ -195,7 +196,7 @@
     const partes = [];
     if (sep !== null) {
       sep = texto(sep, e);
-      if (!sep) e('ValueError', 'El separador no puede estar vacío.');
+      if (!sep) e('ValueError', traducir("curso.el_separador_no_puede_estar"));
       let inicio = 0, i;
       while (restantes-- > 0 && (i = x.indexOf(sep, inicio)) !== -1) {
         partes.push(x.slice(inicio, i));
@@ -303,17 +304,17 @@
     const pares = [...opciones].filter(s => Math.abs(nombre.length - s.length) <= 2)
       .map(s => [s, distancia(s)]).sort((a, b) => a[1] - b[1]);
     const tolerancia = nombre.length <= 2 ? 0 : nombre.length <= 4 ? 1 : 2;
-    return pares[0] && pares[0][1] > 0 && pares[0][1] <= tolerancia ? ' ¿Querías escribir ' + pares[0][0] + '?' : '';
+    return pares[0] && pares[0][1] > 0 && pares[0][1] <= tolerancia ? traducir("curso.querias_escribir") + pares[0][0] + '?' : '';
   }
   function metodo(base, nombre, error) {
     if (Array.isArray(base) && nombre === 'sort') return { tipo: 'integrada', nombre, ordenar: true, base };
     if (base?.tipo === 'modulo' && base.attrs.has(nombre)) return base.attrs.get(nombre);
     const metodos = Array.isArray(base) ? metodosLista : typeof base === 'string' ? metodosTexto : base?.tipo === 'dict' ? metodosDict : {};
-    if (!Object.hasOwn(metodos, nombre)) error('AttributeError', 'Este valor no tiene el método ' + nombre + '.' + cercana(nombre, Object.keys(metodos)));
+    if (!Object.hasOwn(metodos, nombre)) error('AttributeError', traducir("curso.este_valor_no_tiene_el") + nombre + '.' + cercana(nombre, Object.keys(metodos)));
     const [min, max, fn] = metodos[nombre];
     return { tipo: 'integrada', nombre, fn: (args, kw, e) => {
       aridad(nombre, args, e, min, max);
-      if (Object.keys(kw).length) e('TypeError', 'Usa argumentos posicionales para este método.');
+      if (Object.keys(kw).length) e('TypeError', traducir("curso.usa_argumentos_posicionales_para_este"));
       return V.limite(fn(base, args, e), e);
     } };
   }
@@ -323,13 +324,13 @@
     for (const [nombre, [min, max, fn]] of Object.entries(funciones)) {
       mapa.set(nombre, { tipo: 'integrada', nombre, fn: (args, kw, e) => {
         aridad(nombre, args, e, min, max);
-        if (Object.keys(kw).length) e('TypeError', 'Usa argumentos posicionales.');
+        if (Object.keys(kw).length) e('TypeError', traducir("curso.usa_argumentos_posicionales"));
         return V.limite(fn(args, e), e);
       } });
     }
     for (const [nombre, fn] of Object.entries(extras)) {
       mapa.set(nombre, { tipo: 'integrada', nombre, fn: (args, kw, e) => {
-        if (Object.keys(kw).length) e('TypeError', 'Usa argumentos posicionales para las órdenes del mapa.');
+        if (Object.keys(kw).length) e('TypeError', traducir("curso.usa_argumentos_posicionales_para_las"));
         try { return fn(...args.map(v => V.tipo(v) === 'float' ? V.num(v) : v)) ?? null; }
         catch (error) { return e('RuntimeError', error.message); }
       } });

@@ -3,51 +3,57 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>El Faro · Código Retro</title>
-  <link rel="stylesheet" href="css/estilo.css">
-  <link rel="stylesheet" href="css/terminal.css">
+  <title data-t="terminal.el_faro_codigo_retro">El Faro · Código Retro</title>
+  <link rel="stylesheet" href="css/estilo.css?v=1.3.0">
+  <link rel="stylesheet" href="css/terminal.css?v=1.3.0">
 </head>
 <body class="faro">
   <main class="faro-marco">
     <header class="faro-cabecera">
-      <a href="index.html">← Menú</a>
-      <h1>El Faro</h1>
-      <a id="enlace-capitulos" href="#capitulos">Capítulos</a>
-      <label>Fósforo <select id="fosforo">
-        <option value="verde">Verde</option><option value="ambar">Ámbar</option><option value="blanco">Blanco</option>
+      <a href="index.html" data-t="terminal.menu">← Menú</a>
+      <h1 data-t="terminal.el_faro">El Faro</h1>
+      <a id="enlace-capitulos" href="#capitulos" data-t="terminal.capitulos">Capítulos</a>
+      <label><span data-t="terminal.fosforo">Fósforo</span> <select id="fosforo">
+        <option value="verde" data-t="terminal.verde">Verde</option><option value="ambar" data-t="terminal.ambar">Ámbar</option><option value="blanco" data-t="terminal.blanco">Blanco</option>
       </select></label>
-      <button type="button" id="sonido-faro" aria-pressed="false">Silenciar</button>
-    </header>
+      <button type="button" id="sonido-faro" aria-pressed="false" data-t="bash.silenciar">Silenciar</button>
+        <div class="selector-idioma" role="group" aria-label="Idioma" data-t-aria="idioma.selector">
+      <button type="button" data-idioma="es" aria-pressed="true" aria-label="Español" data-t-aria="idioma.es">ES</button>
+      <span aria-hidden="true">|</span>
+      <button type="button" data-idioma="en" aria-pressed="false" aria-label="Inglés" data-t-aria="idioma.en">EN</button>
+    </div>
+  </header>
     <section id="capitulos" hidden aria-labelledby="titulo-capitulos">
-      <h2 id="titulo-capitulos">Capítulos</h2><p id="progreso-capitulos"></p>
+      <h2 id="titulo-capitulos" data-t="terminal.capitulos">Capítulos</h2><p id="progreso-capitulos"></p>
       <div id="lista-capitulos" class="lista-capitulos"></div>
     </section>
     <div id="guardia" class="guardia">
       <section class="faro-panel" aria-labelledby="titulo-mision">
         <p id="numero-mision" class="faro-indice"></p>
         <h2 id="titulo-mision"></h2>
-        <canvas id="lumen" width="16" height="16" role="img" aria-label="Lumen"></canvas>
+        <canvas id="lumen" width="16" height="16" role="img" aria-label="Lumen" data-t-aria="bash.lumen"></canvas>
         <p id="texto-mision"></p>
-        <h3>Objetivos</h3><ul id="objetivos"></ul>
+        <p id="aviso-simulacion" class="guia" data-t="faro2.simulacion" hidden>Los procesos, el disco y la red pertenecen al simulador.</p>
+        <h3 data-t="terminal.objetivos">Objetivos</h3><ul id="objetivos"></ul>
         <div class="acciones-mision">
-          <button type="button" id="pista">💡 Pista</button>
-          <button type="button" id="reiniciar">↺ Reiniciar misión</button>
+          <button type="button" id="pista" data-t="ejercicios.pista">💡 Pista</button>
+          <button type="button" id="reiniciar" data-t="terminal.reiniciar_mision">↺ Reiniciar misión</button>
         </div>
         <p id="texto-pista" role="status"></p>
       </section>
-      <section class="crt" data-fosforo="verde" aria-label="Terminal de Faro-7">
+      <section class="crt" data-fosforo="verde" aria-label="Terminal de Faro-7" data-t-aria="terminal.terminal_de_faro_7">
         <div id="pantalla" class="pantalla-crt">
-          <div id="salida" role="log" aria-label="Salida de la terminal"></div>
+          <div id="salida" role="log" aria-label="Salida de la terminal" data-t-aria="terminal.salida_de_la_terminal"></div>
           <form id="orden" class="orden">
             <label id="prompt" for="linea"></label>
-            <input id="linea" aria-label="Línea de comandos" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
+            <input id="linea" aria-label="Línea de comandos" data-t-aria="terminal.linea_de_comandos" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
           </form>
         </div>
       </section>
-      <section class="faro-panel faro-ayuda" aria-label="Ayuda">
-        <div class="pestanas" role="tablist" aria-label="Vistas de ayuda">
-          <button type="button" id="tab-chuleta" role="tab" aria-controls="chuleta" aria-selected="true">Chuleta</button>
-          <button type="button" id="tab-mapa" role="tab" aria-controls="mapa" aria-selected="false" tabindex="-1">Mapa</button>
+      <section class="faro-panel faro-ayuda" aria-label="Ayuda" data-t-aria="terminal.ayuda">
+        <div class="pestanas" role="tablist" aria-label="Vistas de ayuda" data-t-aria="terminal.vistas_de_ayuda">
+          <button type="button" id="tab-chuleta" role="tab" aria-controls="chuleta" aria-selected="true" data-t="bash.chuleta">Chuleta</button>
+          <button type="button" id="tab-mapa" role="tab" aria-controls="mapa" aria-selected="false" tabindex="-1" data-t="terminal.mapa">Mapa</button>
         </div>
         <div id="chuleta" role="tabpanel" aria-labelledby="tab-chuleta"></div>
         <div id="mapa" role="tabpanel" aria-labelledby="tab-mapa" hidden></div>
@@ -55,38 +61,49 @@
     </div>
   </main>
   <dialog id="victoria" class="faro-panel" aria-labelledby="titulo-victoria">
-    <h2 id="titulo-victoria">Misión cumplida</h2>
-    <canvas id="torre" width="48" height="32" role="img" aria-label="Faro-7 encendido" hidden></canvas>
+    <h2 id="titulo-victoria" data-t="terminal.mision_cumplida">Misión cumplida</h2>
+    <canvas id="torre" width="48" height="32" role="img" aria-label="Faro-7 encendido" data-t-aria="terminal.faro_7_encendido" hidden></canvas>
     <p id="cierre"></p><div id="aprendido"></div>
     <form method="dialog" class="acciones-mision">
-      <button type="submit">Volver a la terminal</button>
-      <button type="button" id="siguiente">Siguiente misión</button>
+      <button type="submit" data-t="terminal.volver_a_la_terminal">Volver a la terminal</button>
+      <button type="button" id="siguiente" data-t="terminal.siguiente_mision">Siguiente misión</button>
     </form>
   </dialog>
-  <script src="js/comun/progreso.js"></script>
-  <script src="js/comun/sonido.js"></script>
-  <script src="js/shell/sfa.js"></script>
-  <script src="js/shell/lexico.js"></script>
-  <script src="js/shell/analizador.js"></script>
-  <script src="js/shell/aritmetica.js"></script>
-  <script src="js/shell/expansion.js"></script>
-  <script src="js/shell/comandos/base.js"></script>
-  <script src="js/shell/comandos/rutas.js"></script>
-  <script src="js/shell/comandos/listado.js"></script>
-  <script src="js/shell/comandos/texto.js"></script>
-  <script src="js/shell/comandos/buscar.js"></script>
-  <script src="js/shell/comandos/diff.js"></script>
-  <script src="js/shell/comandos/sesion.js"></script>
-  <script src="js/shell/ayuda.js"></script>
-  <script src="js/shell/ejecutor.js"></script>
-  <script src="js/shell/bash-sintaxis.js"></script>
-  <script src="js/shell/bash-integradas.js"></script>
-  <script src="js/shell/bash.js"></script>
-  <script src="js/terminal/misiones.js"></script>
-  <script src="js/terminal/progreso.js"></script>
-  <script src="js/terminal/sprites.js"></script>
-  <script src="js/terminal/teclado.js"></script>
-  <script src="js/terminal/paneles.js"></script>
-  <script src="js/terminal/juego.js"></script>
+  <script src="js/idiomas/es.js?v=1.3.0"></script>
+  <script src="js/idiomas/en.js?v=1.3.0"></script>
+  <script src="js/comun/idioma.js?v=1.3.0"></script>
+  <script src="js/comun/progreso.js?v=1.3.0"></script>
+  <script src="js/comun/sonido.js?v=1.3.0"></script>
+  <script src="js/shell/sfa.js?v=1.3.0"></script>
+  <script src="js/shell/lexico.js?v=1.3.0"></script>
+  <script src="js/shell/analizador.js?v=1.3.0"></script>
+  <script src="js/shell/aritmetica.js?v=1.3.0"></script>
+  <script src="js/shell/expansion.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/base.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/rutas.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/listado.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/texto.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/buscar.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/diff.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/sesion.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/entorno.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/procesos.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/espacio.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/red.js?v=1.3.0"></script>
+  <script src="js/shell/hashes.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/atalaya.js?v=1.3.0"></script>
+  <script src="js/shell/ayuda.js?v=1.3.0"></script>
+  <script src="js/shell/ejecutor.js?v=1.3.0"></script>
+  <script src="js/shell/bash-sintaxis.js?v=1.3.0"></script>
+  <script src="js/shell/bash-integradas.js?v=1.3.0"></script>
+  <script src="js/shell/bash.js?v=1.3.0"></script>
+  <script src="js/terminal/misiones-faro2.js?v=1.3.0"></script>
+  <script src="js/terminal/misiones.js?v=1.3.0"></script>
+  <script src="js/terminal/misiones-en.js?v=1.3.0"></script>
+  <script src="js/terminal/progreso.js?v=1.3.0"></script>
+  <script src="js/terminal/sprites.js?v=1.3.0"></script>
+  <script src="js/terminal/teclado.js?v=1.3.0"></script>
+  <script src="js/terminal/paneles.js?v=1.3.0"></script>
+  <script src="js/terminal/juego.js?v=1.3.0"></script>
 </body>
 </html>

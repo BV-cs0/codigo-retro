@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const traducir = typeof module !== 'undefined' ? require('../../comun/idioma').t : globalThis.CR.t;
   const { fallo, palabra, numero, tokens, leer } = typeof module !== 'undefined' ? require('./lexico') : window.CR.PyLexico;
   const reservada = /^(if|elif|else|and|or|not|in|while|for|break|continue|return|def|pass|True|False|None|as|assert|async|await|class|del|except|finally|from|global|import|is|lambda|nonlocal|raise|try|with|yield)$/;
 
@@ -20,11 +21,11 @@
       fallo('SyntaxError', this.tokens[this.i]?.linea ?? this.linea, mensaje, original);
     }
     pedir(s) {
-      if (!this.aceptar(s)) this.error('Se esperaba «' + s + '».', s === ':' ? "expected ':'" : 'invalid syntax');
+      if (!this.aceptar(s)) this.error(traducir("curso.se_esperaba") + s + '».', s === ':' ? "expected ':'" : 'invalid syntax');
     }
     nombre() {
       const s = this.ver();
-      if (!palabra.test(s) || reservada.test(s)) this.error('Se esperaba un nombre.');
+      if (!palabra.test(s) || reservada.test(s)) this.error(traducir("curso.se_esperaba_un_nombre"));
       return this.tomar().valor;
     }
     items(fin, leer) {
@@ -54,7 +55,7 @@
       if (t.cita) return this.literal(t);
       if (numero.test(s)) {
         const flotante = /[.eE]/.test(s);
-        if (!flotante && /^0+[^0]/.test(s)) this.error('Los enteros decimales no empiezan con un cero.');
+        if (!flotante && /^0+[^0]/.test(s)) this.error(traducir("curso.los_enteros_decimales_no_empiezan"));
         return nodo(flotante ? 'float' : 'int', { valor: flotante ? Number(s) : s });
       }
       if (s === 'True' || s === 'False' || s === 'None') return nodo('constante', { valor: { True: true, False: false, None: null }[s] });
@@ -71,7 +72,7 @@
       }) });
       if (['+', '-', 'not'].includes(s)) return nodo('unario', { op: s, expr: this.expr(s === 'not' ? 4 : 7) });
       if (palabra.test(s) && !reservada.test(s)) return nodo('nombre', { nombre: s });
-      this.error('Se esperaba una expresión.');
+      this.error(traducir("curso.se_esperaba_una_expresion"));
     }
     argumento() {
       if (this.tokens[this.i + 1]?.valor !== '=') return { valor: this.expr() };
@@ -126,8 +127,8 @@
     const tipo = p.ver();
     if (['pass', 'return', 'break', 'continue'].includes(tipo)) {
       p.tomar();
-      if (tipo === 'return' && !contexto.funcion) p.error('return debe estar dentro de una función.');
-      if (['break', 'continue'].includes(tipo) && !contexto.bucle) p.error(tipo + ' debe estar dentro de un bucle.');
+      if (tipo === 'return' && !contexto.funcion) p.error(traducir("curso.return_debe_estar_dentro_de"));
+      if (['break', 'continue'].includes(tipo) && !contexto.bucle) p.error(tipo + traducir("curso.debe_estar_dentro_de_un"));
       return nodo(tipo, { expr: tipo === 'return' && p.ver() ? p.secuencia(['']) : null });
     }
     if (tipo === 'import' || tipo === 'from') return importar(p);
@@ -138,7 +139,7 @@
     const destino = p.secuencia(['=', '']);
     const op = p.ver();
     if (!['=', '+=', '-=', '*=', '/='].includes(op)) return nodo('expr', { expr: destino });
-    if (!asignable(destino) || (op !== '=' && destino.tipo === 'tupla')) p.error('No puedes asignar un valor aquí.');
+    if (!asignable(destino) || (op !== '=' && destino.tipo === 'tupla')) p.error(traducir("curso.no_puedes_asignar_un_valor"));
     p.tomar();
     return nodo('asigna', { destino, op, expr: p.secuencia(['']) });
   }
@@ -159,7 +160,7 @@
   function cabecera(p, tipo) {
     if (tipo === 'for') {
       const destino = p.secuencia(['in'], () => p.expr(5));
-      if (!asignable(destino)) p.error('No puedes asignar un valor aquí.');
+      if (!asignable(destino)) p.error(traducir("curso.no_puedes_asignar_un_valor"));
       p.pedir('in');
       return { destino, expr: p.secuencia([':']) };
     }
@@ -169,7 +170,7 @@
       const params = p.items(')', () => ({ nombre: p.nombre(), defecto: p.aceptar('=') ? p.expr() : null }));
       if (new Set(params.map(param => param.nombre)).size !== params.length ||
           params.some((param, i) => !param.defecto && params.slice(0, i).some(prev => prev.defecto))) {
-        p.error('Revisa los nombres y el orden de los parámetros.');
+        p.error(traducir("curso.revisa_los_nombres_y_el"));
       }
       return { nombre, params };
     }
@@ -201,7 +202,7 @@
         cuerpo = [{ ...sencilla(p, dentro), linea }];
         p.pedir('');
       } else {
-        if (lineas[i]?.tipo !== 'INDENT') fallo('IndentationError', lineas[i]?.linea ?? linea, 'Esperaba una línea con sangría después de «:».');
+        if (lineas[i]?.tipo !== 'INDENT') fallo('IndentationError', lineas[i]?.linea ?? linea, traducir("curso.esperaba_una_linea_con_sangria"));
         i++;
         cuerpo = bloque(dentro);
         i++;
@@ -211,7 +212,7 @@
     function bloque(contexto) {
       const partes = [];
       while (lineas[i] && lineas[i].tipo !== 'DEDENT') {
-        if (lineas[i].tipo === 'INDENT') fallo('IndentationError', lineas[i].linea, 'Esta sangría no coincide con ninguna anterior.');
+        if (lineas[i].tipo === 'INDENT') fallo('IndentationError', lineas[i].linea, traducir("curso.esta_sangria_no_coincide_con"));
         const s = instruccion(contexto);
         if (['elif', 'else', 'except', 'finally'].includes(s.tipo)) {
           agregarRama(partes.at(-1), s);
@@ -220,7 +221,7 @@
           partes.push(s);
         }
       }
-      for (const s of partes) if (s.tipo === 'try' && !s.ramas.length) fallo('SyntaxError', s.linea, 'Falta except o finally.');
+      for (const s of partes) if (s.tipo === 'try' && !s.ramas.length) fallo('SyntaxError', s.linea, traducir("curso.falta_except_o_finally"));
       return partes;
     }
     return bloque({});
@@ -231,7 +232,7 @@
       previo?.tipo === 'try' && ultima?.tipo !== 'finally' && (
         rama.tipo === 'finally' || rama.tipo === 'else' && ultima?.tipo === 'except' ||
         rama.tipo === 'except' && (!ultima || ultima.tipo === 'except' && ultima.expr));
-    if (!permitida) fallo('SyntaxError', rama.linea, 'Esta rama no corresponde al bloque anterior.');
+    if (!permitida) fallo('SyntaxError', rama.linea, traducir("curso.esta_rama_no_corresponde_al"));
     previo.ramas.push(rama);
   }
   const Sintaxis = { analizar, fallo };

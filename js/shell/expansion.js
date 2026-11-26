@@ -1,5 +1,6 @@
 (function (CR) {
 'use strict';
+const traducir = typeof module !== 'undefined' ? require('../comun/idioma').t : globalThis.CR.t;
 const Shell = CR.Shell = CR.Shell || {};
 const { patron, nombre } = typeof module !== 'undefined' ? require('./sfa') : Shell.SFA;
 const Lexico = typeof module !== 'undefined' ? require('./lexico') : Shell.Lexico;
@@ -23,7 +24,7 @@ function parametro(clave, sesion) {
   }
   const reemplazar = clave.match(/^([A-Za-z_]\w*)\/\/([^/*?\[]+)\/([^/]*)$/);
   if (reemplazar) return parametro(reemplazar[1], sesion).replaceAll(reemplazar[2], reemplazar[3]);
-  throw new Error('Expansión de parámetro fuera del subconjunto admitido: ' + clave);
+  throw new Error(traducir("shell.expansion_de_parametro_fuera_del") + clave);
 }
 function trozos(texto, sesion, documento = false) {
   const valores = [];
@@ -42,7 +43,7 @@ function trozos(texto, sesion, documento = false) {
     let valor;
     if (token.startsWith('$((')) valor = String(Shell.Aritmetica.calcular(token.slice(3, -2), sesion.vars));
     else if (token.startsWith('$(') || token.startsWith('`')) {
-      if (!Shell.Bash) throw new Error('Sustitución de comandos no disponible.');
+      if (!Shell.Bash) throw new Error(traducir("shell.sustitucion_de_comandos_no_disponible"));
       valor = Shell.Bash.capturar(token.startsWith('`') ? token.slice(1, -1) : token.slice(2, -1), sesion);
     } else valor = parametro(token.startsWith('${') ? token.slice(2, -1) : token.slice(1), sesion);
     valores.push({ texto: valor, expansion: true, varios: /^\$(?:@|\{@\})$/.test(token) });
@@ -64,7 +65,7 @@ function campos(partes, sesion, literal, comodines = !literal) {
   for (const [i, parte] of partes.entries()) {
     const libre = parte.modo === 'libre';
     let texto = parte.texto;
-    if (i === 0 && libre && /^~(?:\/|$)/.test(texto)) texto = sesion.vars.HOME + texto.slice(1);
+    if (i === 0 && libre && /^~(?:\/|$)/.test(texto)) texto = (sesion.vars.HOME ?? sesion.identidad.home) + texto.slice(1);
     const piezas = parte.modo === 'literal' ? [{ texto }] : trozos(texto, sesion);
     if (!libre && !(piezas.length === 1 && piezas[0].varios && !literal)) presente = true;
     for (const pieza of piezas) {
@@ -111,7 +112,7 @@ function glob(campo, sesion) {
   }
   rutas = rutas.filter(ruta => {
     try {
-      const nodo = sesion.fs.obtener(sesion.ruta(ruta, false));
+      const nodo = sesion.fs.obtener(sesion.ruta(ruta, false), texto.endsWith('/'));
       return !texto.endsWith('/') || nodo.carpeta;
     } catch { return false; }
   }).sort(Shell.Base?.cmp);
@@ -127,7 +128,7 @@ function rangoLlaves(texto) {
   const diferencia = fin - inicio;
   const cantidad = Math.floor(Math.abs(diferencia) / salto) + 1;
   if (![inicio, fin, salto, diferencia].every(Number.isSafeInteger) || cantidad > 20001)
-    throw new Error('Rango de llaves demasiado grande.');
+    throw new Error(traducir("shell.rango_de_llaves_demasiado_grande"));
   const ancho = /^-?0\d/.test(a) || /^-?0\d/.test(b) ? Math.max(a.length, b.length) : 0;
   return Array.from({ length: cantidad }, (_, i) => {
     const n = inicio + i * salto * Math.sign(diferencia);

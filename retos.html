@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-t="atalaya.title">Operación Atalaya</title>
+  <link rel="stylesheet" href="css/estilo.css?v=1.3.0">
+  <link rel="stylesheet" href="css/terminal.css?v=1.3.0">
+  <link rel="stylesheet" href="css/atalaya.css?v=1.3.0">
+</head>
+<body class="faro atalaya">
+  <main class="faro-marco">
+    <header class="faro-cabecera">
+      <a href="index.html" data-t="terminal.menu">← Menú</a>
+      <h1 data-t="atalaya.title">Operación Atalaya</h1>
+      <button type="button" id="abrir-etica" data-t="atalaya.ethics">Ética</button>
+      <div class="selector-idioma" role="group" aria-label="Idioma" data-t-aria="idioma.selector">
+        <button type="button" data-idioma="es" aria-pressed="true" data-t-aria="idioma.es">ES</button>
+        <span aria-hidden="true">|</span>
+        <button type="button" data-idioma="en" aria-pressed="false" data-t-aria="idioma.en">EN</button>
+      </div>
+    </header>
+    <p class="lema-atalaya"><span aria-hidden="true">▸ </span><span data-t="atalaya.tagline">CTF de ciberseguridad · hackeo ético</span><span aria-hidden="true"> ◂</span></p>
+    <p data-t="atalaya.intro">Investiga en la terminal simulada y entrega la bandera.</p>
+    <p id="total" role="status"></p>
+    <div id="categorias"></div>
+    <button type="button" id="ver-final" data-t="atalaya.finish" hidden>Entrenamiento completo</button>
+    <div class="guardia" id="guardia" hidden>
+      <section class="faro-panel" aria-labelledby="titulo-reto">
+        <h2 id="titulo-reto"></h2>
+        <canvas id="nix" width="16" height="16" role="img" data-t-aria="atalaya.nix"></canvas>
+        <p id="texto-reto"></p>
+        <p id="puntos-reto"></p>
+        <div class="acciones-mision">
+          <button type="button" id="pista" data-t="atalaya.hint">Pista</button>
+          <button type="button" id="reiniciar" data-t="atalaya.retry">Reiniciar reto</button>
+        </div>
+        <p id="texto-pista" role="status"></p>
+      </section>
+      <section class="crt" aria-label="Terminal de Atalaya" data-t-aria="atalaya.terminal">
+        <div class="pantalla-crt" id="pantalla">
+          <div id="salida" role="log" data-t-aria="terminal.salida_de_la_terminal"></div>
+          <form class="orden" id="orden">
+            <label id="prompt" for="linea"></label>
+            <input id="linea" type="text" data-t-aria="terminal.linea_de_comandos" autocomplete="off" autocapitalize="off" spellcheck="false">
+          </form>
+        </div>
+      </section>
+      <section class="faro-panel faro-ayuda" aria-labelledby="titulo-chuleta">
+        <h2 id="titulo-chuleta" data-t="bash.chuleta">Chuleta</h2>
+        <div id="chuleta"></div>
+      </section>
+    </div>
+  </main>
+  <dialog id="etica" class="faro-panel" aria-labelledby="titulo-etica">
+    <h2 id="titulo-etica" data-t="atalaya.ethics">Ética</h2>
+    <p data-t="atalaya.notice">Aquí todo es simulado. Usa estas técnicas solo en sistemas propios o con permiso por escrito. Atacar sistemas ajenos es delito.</p>
+    <button type="button" id="aceptar-etica" data-t="atalaya.got">Entendido</button>
+  </dialog>
+  <dialog id="cierre" class="faro-panel" aria-labelledby="titulo-cierre">
+    <h2 id="titulo-cierre" data-t="atalaya.won">Reto resuelto</h2>
+    <h3 data-t="atalaya.did">Lo que hiciste</h3>
+    <p id="hecho"></p>
+    <h3 data-t="atalaya.defend">Cómo defenderse</h3>
+    <p id="defensa"></p>
+    <h3 data-t="atalaya.commands">Comandos</h3>
+    <p id="comandos-usados"></p>
+    <button type="button" id="cerrar-reto" data-t="atalaya.close">Cerrar</button>
+  </dialog>
+  <dialog id="final" class="faro-panel" aria-labelledby="titulo-final">
+    <h2 id="titulo-final" data-t="atalaya.finish">Entrenamiento completo</h2>
+    <canvas id="nix-final" width="16" height="16" role="img" data-t-aria="atalaya.nix"></canvas>
+    <p id="final-total"></p>
+    <button type="button" id="cerrar-final" data-t="atalaya.close">Cerrar</button>
+  </dialog>
+  <script src="js/idiomas/es.js?v=1.3.0"></script>
+  <script src="js/idiomas/en.js?v=1.3.0"></script>
+  <script src="js/comun/idioma.js?v=1.3.0"></script>
+  <script src="js/shell/sfa.js?v=1.3.0"></script>
+  <script src="js/shell/lexico.js?v=1.3.0"></script>
+  <script src="js/shell/analizador.js?v=1.3.0"></script>
+  <script src="js/shell/aritmetica.js?v=1.3.0"></script>
+  <script src="js/shell/expansion.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/base.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/rutas.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/listado.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/texto.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/buscar.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/diff.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/sesion.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/entorno.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/procesos.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/espacio.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/red.js?v=1.3.0"></script>
+  <script src="js/shell/hashes.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/atalaya.js?v=1.3.0"></script>
+  <script src="js/shell/ayuda.js?v=1.3.0"></script>
+  <script src="js/shell/ejecutor.js?v=1.3.0"></script>
+  <script src="js/shell/bash-sintaxis.js?v=1.3.0"></script>
+  <script src="js/shell/bash-integradas.js?v=1.3.0"></script>
+  <script src="js/shell/bash.js?v=1.3.0"></script>
+  <script src="js/terminal/teclado.js?v=1.3.0"></script>
+  <script src="js/atalaya/datos.js?v=1.3.0"></script>
+  <script src="js/atalaya/categoria-a.js?v=1.3.0"></script>
+  <script src="js/atalaya/categoria-b.js?v=1.3.0"></script>
+  <script src="js/atalaya/categoria-c.js?v=1.3.0"></script>
+  <script src="js/atalaya/categoria-d.js?v=1.3.0"></script>
+  <script src="js/atalaya/categoria-e.js?v=1.3.0"></script>
+  <script src="js/atalaya/progreso.js?v=1.3.0"></script>
+  <script src="js/atalaya/nix.js?v=1.3.0"></script>
+  <script src="js/atalaya/juego.js?v=1.3.0"></script>
+</body>
+</html>

@@ -1,18 +1,40 @@
 (function (CR) {
 'use strict';
+const traducir = typeof module !== 'undefined' ? require('../comun/idioma').t : globalThis.CR.t;
 const Shell = CR.Shell = CR.Shell || {};
 const { ayuda, registrar: R, opciones } = typeof module !== 'undefined' ? require('./comandos/base') : Shell.Base;
-R('help', 'Lista los comandos del simulador.', ['help', 'man ls'], c => {
+const noDisponibles = new Set(('sed awk vim vi nano sudo su apt apt-get scp wget top ' +
+  'chown tar zip unzip git python python3 emacs more rsync systemctl htop').split(' '));
+const ingles = { mision: 'mission', responder: 'answer', enviar: 'submit' };
+const aliases = { mission: 'mision', answer: 'responder', submit: 'enviar' };
+const canonico = (nombre, idioma) => (nombre === 'submit' || idioma === 'en') && Object.hasOwn(aliases, nombre) ? aliases[nombre] : nombre;
+const nombreVisible = (nombre, idioma) => idioma === 'en' && Object.hasOwn(ingles, nombre) ? ingles[nombre] : nombre;
+const nombres = idioma => Object.keys(ayuda).map(c => nombreVisible(c, idioma)).sort();
+const palabras = { nota: 'note', hola: 'hello', nombres: 'names', puntos: 'scores',
+  datos: 'data', faro: 'beacon', antes: 'before', despues: 'after', uno: 'one', dos: 'two', fotos: 'photos',
+  almacen: 'storeroom', vieja: 'old', otra: 'other', copia: 'copy', secretos: 'secrets', tormenta: 'storm',
+  contraseña: 'password', cartas: 'letters', fecha: 'date', mapa: 'map', acceso: 'shortcut',
+  boya: 'buoy', estado: 'status', vigia: 'watcher', relevo: 'relay', ...ingles, solo: 'only' };
+function ficha(nombre, idioma) {
+  const original = ayuda[canonico(nombre, idioma)];
+  if (!original) return original;
+  const localizar = valor => typeof valor === 'function' ? valor(idioma) : valor;
+  const ejemplos = idioma === 'en' ? original.ejemplos.map(linea => linea.replace(/\p{L}+/gu,
+    palabra => Object.hasOwn(palabras, palabra) ? palabras[palabra] : palabra)) : original.ejemplos;
+  return { descripcion: localizar(original.descripcion), ejemplos,
+    opciones: Object.fromEntries(Object.entries(original.opciones).map(([op, texto]) => [op, localizar(texto)])) };
+}
+R('help', traducir("shell.lista_los_comandos_del_simulador"), ['help', 'man ls'], c => {
   opciones(c);
-  for (const nombre of Object.keys(ayuda).sort()) c.out(nombre.padEnd(11) + ayuda[nombre].descripcion + '\n');
+  for (const nombre of nombres(c.sesion.idioma)) c.out(nombre.padEnd(11) + ficha(nombre, c.sesion.idioma).descripcion + '\n');
 });
-R('man', 'Abre el manual de un comando.', ['man ls', 'man grep'], c => {
+R('man', traducir("shell.abre_el_manual_de_un"), ['man ls', 'man grep'], c => {
   const { args } = opciones(c);
-  const ficha = ayuda[args[0]];
-  if (!ficha) return c.error('No manual entry for ' + (args[0] || ''));
-  c.out(args[0].toUpperCase() + '\n\n' + ficha.descripcion + '\n');
-  for (const [op, texto] of Object.entries(ficha.opciones)) c.out('  ' + op + '  ' + texto + '\n');
-  c.out('\nEjemplos\n' + ficha.ejemplos.map(e => '  ' + e + '\n').join(''));
+  const manual = ficha(args[0], c.sesion.idioma);
+  if (!manual) return c.error('No manual entry for ' + (args[0] || ''));
+  c.out(args[0].toUpperCase() + '\n\n' + manual.descripcion + '\n');
+  for (const [op, texto] of Object.entries(manual.opciones)) c.out('  ' + op + '  ' + texto + '\n');
+  c.out(traducir[c.sesion.idioma]("shell.ejemplos") + manual.ejemplos.map(e => '  ' + e + '\n').join(''));
 });
 function distancia(a, b) {
   let fila = Array.from({ length: b.length + 1 }, (_, i) => i);
@@ -25,26 +47,36 @@ function distancia(a, b) {
   }
   return fila[b.length];
 }
-function explicar(error) {
+function sugerir(palabra, idioma) {
+  const texto = traducir[idioma] ?? traducir;
+  const opciones = nombres(idioma).map(c => [c, distancia(palabra, c)]).filter(([c, d]) => {
+    const longitud = Math.min(c.length, palabra.length);
+    return longitud >= 2 && d <= (longitud >= 6 ? 2 : 1);
+  }).sort((a, b) => a[1] - b[1] || a[0].length - b[0].length);
+  const [mejor, siguiente] = opciones;
+  if (mejor && (mejor[1] !== siguiente?.[1] || mejor[0].length < siguiente[0].length))
+    return texto("shell.sugerencia", { comando: mejor[0] });
+  return texto("shell.usa_help_para_ver_los");
+}
+function explicar(error, idioma) {
+  const texto = traducir[idioma] ?? traducir;
   if (error.endsWith(': command not found')) {
     const palabra = error.replace(/^.*?: line \d+: |^bash: /, '').slice(0, -': command not found'.length);
-    const opciones = Object.keys(ayuda).map(c => [c, distancia(palabra, c)]).sort((a, b) => a[1] - b[1]);
-    if (opciones[0]?.[1] <= 2) return '¿Querías decir ' + opciones[0][0] + '?';
-    return 'Usa help para ver los comandos disponibles.';
+    return sugerir(palabra, idioma);
   }
-  if (error.includes("[: missing ']'")) return 'Cierra la condición con ] y deja un espacio antes del corchete.';
-  if (error.includes('[: too many arguments')) return 'La condición recibió palabras de más. Pon comillas dobles alrededor de la variable.';
-  if (error.includes('unexpected EOF while looking')) return 'Revisa que las comillas abiertas tengan su pareja.';
-  if (error.includes('unexpected end of file')) return 'Revisa que los bloques se cierren con fi, done o esac.';
-  if (error.includes('No such file or directory')) return 'No existe ese archivo o carpeta. Usa ls para ver qué hay aquí.';
-  if (error.includes('Permission denied') || error.includes('Operation not permitted')) return 'Revisa el dueño y los permisos con ls -l.';
-  if (error.includes('Is a directory')) return 'Esa ruta es una carpeta. Usa ls para ver su contenido.';
-  if (error.includes('Not a directory')) return 'Un tramo de la ruta apunta a un archivo. Revisa la ruta con ls.';
-  if (error.includes('File exists')) return 'Ese nombre ya existe. Usa ls para revisar qué hay en la carpeta.';
-  if (error.includes('Directory not empty')) return 'Hay archivos dentro. Revísalos antes de borrar la carpeta.';
-  return 'Consulta help o man para ver ejemplos.';
+  if (error.includes("[: missing ']'")) return texto("shell.cierra_la_condicion_con_y");
+  if (error.includes('[: too many arguments')) return texto("shell.la_condicion_recibio_palabras_de");
+  if (error.includes('unexpected EOF while looking')) return texto("shell.revisa_que_las_comillas_abiertas");
+  if (error.includes('unexpected end of file')) return texto("shell.revisa_que_los_bloques_se");
+  if (error.includes('No such file or directory')) return texto("shell.no_existe_ese_archivo_o");
+  if (error.includes('Permission denied') || error.includes('Operation not permitted')) return texto("shell.revisa_el_dueno_y_los");
+  if (error.includes('Is a directory')) return texto("shell.esa_ruta_es_una_carpeta");
+  if (error.includes('Not a directory')) return texto("shell.un_tramo_de_la_ruta");
+  if (error.includes('File exists')) return texto("shell.ese_nombre_ya_existe_usa");
+  if (error.includes('Directory not empty')) return texto("shell.hay_archivos_dentro_revisalos_antes");
+  return texto("shell.consulta_help_o_man_para");
 }
-Shell.Ayuda = { fichas: ayuda, explicar };
+Shell.Ayuda = { fichas: ayuda, ficha, explicar, noDisponibles, canonico, nombres };
 if (typeof module !== 'undefined') module.exports = CR.Shell.Ayuda;
 })(globalThis.CR = globalThis.CR || {});
 

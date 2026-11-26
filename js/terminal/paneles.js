@@ -1,7 +1,9 @@
 (function (CR) {
   'use strict';
+  const traducir = CR.t;
   const $ = id => document.getElementById(id);
-  const { Misiones, SFA, Ayuda } = CR.Shell;
+  const { SFA, Ayuda } = CR.Shell;
+  const Misiones = CR.Idioma.contenido('terminal');
   const progreso = CR.ProgresoFaro;
   function nodo(tipo, texto, clase) {
     const n = document.createElement(tipo);
@@ -10,8 +12,10 @@
     return n;
   }
   function ejemplo(comando) {
-    return Ayuda.fichas[comando]?.ejemplos.find(l => l.startsWith(comando + ' ') || l === comando) ??
-      (comando === './encender.sh' ? './encender.sh' : comando);
+    const ficha = Ayuda.ficha(comando, CR.Idioma.actual());
+    if (['base64', 'xxd', 'md5sum', 'sha256sum', 'curl', 'find', 'ls', 'sudo', 'enviar', 'submit'].includes(comando))
+      return ficha?.ejemplos.join('\n') ?? comando;
+    return ficha?.ejemplos.find(l => l.startsWith(comando + ' ') || l === comando) ?? comando;
   }
   function chuleta(comandos, destino) {
     const dl = nodo('dl');
@@ -48,7 +52,7 @@
     return estados.every(Boolean);
   }
   function capitulos(total) {
-    $('progreso-capitulos').textContent = progreso.total() + ' / ' + total + ' misiones';
+    $('progreso-capitulos').textContent = traducir("terminal.contador_misiones", { hechas: progreso.total(), total });
     const fichas = Misiones.capitulos.map(c => {
       const ficha = nodo('section', undefined, 'faro-panel');
       const listas = nodo('ol');
@@ -62,6 +66,8 @@
       ficha.append(nodo('h3', c.titulo), listas);
       return ficha;
     });
+    const temporada = Misiones.capitulos.findIndex(c => c.temporada === 2);
+    fichas.splice(temporada, 0, nodo('h2', traducir('faro2.temporada'), 'faro-temporada'));
     $('lista-capitulos').replaceChildren(...fichas);
   }
   function pestanas() {

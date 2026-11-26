@@ -38,6 +38,9 @@
       solucion: 'def cuidar_parcela():\n' + bloque + '\nfor i in range(8):\n    cuidar_parcela()'
     }
   ]);
-  if (typeof window !== 'undefined') (window.CR ||= {}).NivelesGranja = niveles;
+  if (typeof window !== 'undefined') {
+    window.CR.NivelesGranja = niveles;
+    window.CR.Idioma.registrar('es', 'granja', niveles);
+  }
   if (nodo) module.exports = niveles;
 })();

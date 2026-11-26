@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const traducir = typeof module !== 'undefined' ? require('./comun/idioma').t : globalThis.CR.t;
   const { Pixel, Progreso } = window.CR;
   const logo = document.getElementById('logo').getContext('2d');
   Pixel.texto(logo, 'CÓDIGO RETRO', 16, 6, 2, '#6c459f');
@@ -21,17 +22,22 @@
     SpritesFaro.retrato(lumen, cuadro);
     SpritesFaro.terminalBash(bash, cuadro);
   });
+  window.CR.Nix.animar(document.getElementById('nix-menu'));
   const actualizar = () => {
+    document.getElementById('total-atalaya').textContent =
+      traducir('atalaya.total', window.CR.ProgresoAtalaya.navegador().resumen());
     ProgresoFaro.refrescar();
-    document.getElementById('total-faro').textContent = ProgresoFaro.total() + ' / 40 misiones';
-    document.getElementById('resueltos-menu').textContent = window.CR.ProgresoTaller.total() + ' / 70 resueltos';
-    document.getElementById('total-bash').textContent = window.CR.ProgresoBash.total() + ' / 66 pasos';
+    document.getElementById('total-faro').textContent = ProgresoFaro.total() + traducir("menu.60_misiones");
+    document.getElementById('resueltos-menu').textContent = window.CR.ProgresoTaller.total() + traducir("menu.70_resueltos");
+    document.getElementById('total-bash').textContent = window.CR.ProgresoBash.total() + traducir("menu.66_pasos");
     const progreso = window.CR.ProgresoCurso;
-    document.getElementById('total-curso').textContent = progreso.total() + ' / ' + progreso.cantidad + ' pasos';
+    document.getElementById('total-curso').textContent = progreso.total() + ' / ' + progreso.cantidad + traducir("curso.pasos");
     document.querySelectorAll('[data-total]').forEach(nodo => {
       nodo.textContent = '★ ' + Progreso.total(nodo.dataset.total) + ' / 15';
     });
   };
+  // La versión queda a la vista para quien la busque (las novedades están en CHANGELOG.md).
+  document.getElementById('version-juego').textContent = traducir('menu.version') + ' ' + window.CR.VERSION;
   animar();
   actualizar();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) setInterval(animar, 520);

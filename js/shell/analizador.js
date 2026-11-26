@@ -1,5 +1,6 @@
 (function (CR) {
 'use strict';
+const traducir = typeof module !== 'undefined' ? require('../comun/idioma').t : globalThis.CR.t;
 const Shell = CR.Shell = CR.Shell || {};
 const Lexico = typeof module !== 'undefined' ? require('./lexico') : Shell.Lexico;
 const redirecciones = ['<', '>', '>>', '2>', '<<'];
@@ -22,7 +23,7 @@ class Analizador {
       if (redirecciones.includes(token.valor)) {
         this.tomar();
         const destino = this.tomar();
-        if (destino?.tipo !== 'palabra') throw new Error('Falta el destino de la redirección.');
+        if (destino?.tipo !== 'palabra') throw new Error(traducir("shell.falta_el_destino_de_la"));
         redirs.push({ operador: token.valor, destino, documento: token.documento, literal: token.literal });
       } else if (token.tipo === 'palabra') {
         const inicio = token.partes[0];
@@ -34,7 +35,7 @@ class Analizador {
         this.tomar();
       } else break;
     }
-    if (!palabras.length && !redirs.length && !asignaciones.length) throw new Error('Falta un comando.');
+    if (!palabras.length && !redirs.length && !asignaciones.length) throw new Error(traducir("shell.falta_un_comando"));
     return { tipo: 'simple', palabras, redirecciones: redirs, asignaciones, linea };
   }
   comando() {
@@ -49,7 +50,7 @@ class Analizador {
     const etapas = [this.comando()];
     while (this.mirar()?.valor === '|') {
       this.tomar();
-      if (etapas.length >= 10) throw new Error('Una tubería admite hasta 10 etapas.');
+      if (etapas.length >= 10) throw new Error(traducir("shell.una_tuberia_admite_hasta_10"));
       etapas.push(this.comando());
     }
     return etapas.length === 1 ? etapas[0] : { tipo: 'tuberia', etapas };
@@ -62,10 +63,10 @@ class Analizador {
       const token = this.mirar();
       if (!token || termina(token)) break;
       enlace = token.valor;
-      if (enlace === '&') throw new Error('& no está en este simulador');
-      if (!separadores.includes(enlace)) throw new Error('Separador inesperado.');
+      if (enlace === '&') throw new Error(traducir("shell.no_esta_en_este_simulador"));
+      if (!separadores.includes(enlace)) throw new Error(traducir("shell.separador_inesperado"));
       this.tomar();
-      if (enlace !== ';' && (!this.mirar() || termina(this.mirar()))) throw new Error('Falta un comando.');
+      if (enlace !== ';' && (!this.mirar() || termina(this.mirar()))) throw new Error(traducir("shell.falta_un_comando"));
     }
     return { tipo: 'lista', pasos };
   }

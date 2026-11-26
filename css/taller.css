@@ -29,6 +29,7 @@
 .pie-menu { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: .65rem 1rem; }
 .pie-menu canvas, #avatar-creador { image-rendering: pixelated; }
 .pie-menu canvas { width: 21px; height: 21px; }
+.version-juego { opacity: .7; font-size: .85em; }
 .pagina-creador { max-width: 850px; }
 #avatar-creador { width: 128px; height: 128px; background: #27203d; }
 .formas-apoyo { margin-block: 1rem; }

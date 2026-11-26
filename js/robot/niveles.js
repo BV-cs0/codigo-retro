@@ -39,6 +39,9 @@
       solucion: 'def escalon():\n    avanzar()\n    girar_izquierda()\n    avanzar()\n    girar_derecha()\nfor i in range(4):\n    escalon()'
     }
   ]);
-  if (typeof window !== 'undefined') (window.CR ||= {}).NivelesRobot = niveles;
+  if (typeof window !== 'undefined') {
+    window.CR.NivelesRobot = niveles;
+    window.CR.Idioma.registrar('es', 'robot', niveles);
+  }
   if (nodo) module.exports = niveles;
 })();

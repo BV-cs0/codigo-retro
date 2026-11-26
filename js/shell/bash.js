@@ -1,5 +1,6 @@
 (function (S) {
 'use strict';
+const traducir = typeof module !== 'undefined' ? require('../comun/idioma').t : globalThis.CR.t;
 if (typeof module !== 'undefined') {
   require('./bash-sintaxis');
   require('./bash-integradas');
@@ -23,7 +24,7 @@ function consejoAsignacion(c) {
   const [variable, igual, valor] = c.palabras.map(p => p.original);
   if (!/^[A-Za-z_]\w*$/.test(variable) || !igual?.startsWith('=')) return;
   const asignacion = igual === '=' ? igual + (valor ?? '') : igual;
-  return 'En Bash no puede haber espacios alrededor de =. Escribe ' + variable + asignacion + '.';
+  return traducir("shell.en_bash_no_puede_haber") + variable + asignacion + '.';
 }
 function* funcion(c, nodo, profundidad) {
   if (profundidad >= 100) control('limite', 2);
@@ -44,14 +45,14 @@ function* funcion(c, nodo, profundidad) {
     argumentos(s, args);
   }
 }
-function asignar(c, local) {
+function asignarLocal(c) {
   const s = c.sesion;
-  if (local && !s.locales) return c.error('local: can only be used in a function');
+  if (!s.locales) return c.error('local: can only be used in a function');
   for (const arg of c.args) {
     const m = arg.match(/^([a-zA-Z_]\w*)(?:=(.*))?$/s);
     if (!m) return c.error(c.nombre + ': ' + arg + ': not a valid identifier');
     const [, k, v] = m;
-    if (local && !s.locales.has(k)) { s.locales.set(k, s.vars[k]); s.vars[k] = ''; }
+    if (!s.locales.has(k)) { s.locales.set(k, s.vars[k]); s.vars[k] = ''; }
     if (v !== undefined) s.vars[k] = v;
   }
 }
@@ -60,11 +61,11 @@ function* invocar(c, profundidad) {
   if (s.funciones.has(nombre)) return yield* funcion(c, s.funciones.get(nombre), profundidad);
   if (nombre === 'read') return yield* I.leer(c);
   if (nombre === 'printf') return I.imprimir(c);
-  if (nombre === 'local' || nombre === 'export') return asignar(c, nombre === 'local');
+  if (nombre === 'local') return asignarLocal(c);
   if (nombre === ':' || nombre === 'true' || nombre === 'false') { c.codigo = +(nombre === 'false'); return; }
   if (nombre === 'set') {
     if (c.args[0] !== '--') return diagnostico(c,
-      'set: esta forma no está en este simulador. Usa set -- ... para cambiar los parámetros posicionales.', 2);
+      traducir("shell.set_esta_forma_no_esta"), 2);
     argumentos(s, c.args.slice(1));
     return;
   }
@@ -75,8 +76,9 @@ function* invocar(c, profundidad) {
     return;
   }
   if (nombre === 'exit' || nombre === 'return') {
+    if (nombre === 'exit' && s.local) return S.Base.comandos.exit(c);
     const valor = c.args[0] ?? String(s.codigo);
-    if (nombre === 'return' && !s.locales) return diagnostico(c, 'return: solo se admite dentro de una función', 1);
+    if (nombre === 'return' && !s.locales) return diagnostico(c, traducir("shell.return_solo_se_admite_dentro"), 1);
     if (!/^[+-]?\d+$/.test(valor)) {
       diagnostico(c, nombre + ': ' + valor + ': numeric argument required', 2);
       control(nombre, 2);
@@ -86,7 +88,7 @@ function* invocar(c, profundidad) {
   }
   if (nombre === 'break' || nombre === 'continue') {
     if (s.bucles) control(nombre);
-    return diagnostico(c, nombre + ': only meaningful in a loop', 0, 'Usa esta orden dentro de un bucle.');
+    return diagnostico(c, nombre + ': only meaningful in a loop', 0, traducir("shell.usa_esta_orden_dentro_de"));
   }
   if (nombre === '[' || nombre === 'test') {
     const args = c.args.slice();
@@ -96,14 +98,15 @@ function* invocar(c, profundidad) {
     return;
   }
   const excluido = ['eval', 'trap', 'getopts', 'select', 'declare', 'readonly'].includes(nombre);
-  if (excluido) return diagnostico(c, nombre + ' no está en este simulador', 2);
+  if (excluido) return diagnostico(c, nombre + traducir("shell.no_esta_en_este_simulador_2"), 2);
   diagnostico(c, nombre + ': command not found', 127, consejoAsignacion(c));
 }
-const propias = new Set(['read', 'printf', 'local', 'export', ':', 'true', 'false', 'set', 'shift', 'exit', 'return', 'break', 'continue', '[', 'test']);
+const propias = new Set(['read', 'printf', 'local', ':', 'true', 'false', 'set', 'shift', 'exit', 'return', 'break', 'continue', '[', 'test']);
 function integrada(c, _, profundidad) {
   if (!c.nombre || c.nombre.includes('/')) return;
-  if (c.sesion.terminalBash && c.nombre === 'sudo' && !c.sesion.funciones.has(c.nombre)) return;
-  if (c.sesion.funciones.has(c.nombre) || propias.has(c.nombre) || !S.Base.comandos[c.nombre])
+  if (S.Ayuda.noDisponibles.has(c.nombre) && !c.sesion.funciones.has(c.nombre)) return;
+  const conocido = S.Base.comandos[S.Ayuda.canonico(c.nombre, c.sesion.idioma)];
+  if (c.sesion.funciones.has(c.nombre) || propias.has(c.nombre) || (!conocido && !S.Entorno.buscar(c.sesion, c.nombre)))
     return invocar(c, profundidad);
 }
 function* ejecutar(nodo, s, r, entrada, captura, profundidad) {
@@ -226,7 +229,7 @@ function* programa(script, s, r, opciones = {}) {
     const c = E.contexto(s, '', [], entrada, true, r);
     c.linea = e.linea ?? (analizado ? s.lineaBash : script.split('\n').length);
     diagnostico(c, e.control === 'limite' ? 'execution limit exceeded' : e.message, r.codigo,
-      e.control === 'limite' ? 'Tu script no termina. ¿El bucle cambia la variable de la condición?' : undefined);
+      e.control === 'limite' ? traducir("shell.tu_script_no_termina_el") : undefined);
   } finally { s.codigo = r.codigo; }
 }
 function capturar(script, s) {
@@ -237,7 +240,7 @@ function capturar(script, s) {
   const iterador = programa(script, hijo, r, { heredar, archivo: s.archivoBash, entradas: [] });
   if (heredar) hijo.entradaBash = { filas: [] };
   const paso = iterador.next();
-  if (!paso.done) throw new Error('No se admite entrada interactiva en esta sustitución.');
+  if (!paso.done) throw new Error(traducir("shell.no_se_admite_entrada_interactiva"));
   s.codigoSustitucion = r.codigo;
   if (r.error && s.destinoBash) {
     for (const evento of r.eventos.filter(e => ['error', 'guia'].includes(e.estilo)))

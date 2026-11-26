@@ -60,7 +60,7 @@ function operar(ctx, args, prefijo, fn) {
 function recorrer(ctx, visible, maximo, visitar, nivel = 0) {
   const ruta = ctx.ruta(visible);
   try {
-    const nodo = ctx.fs.obtener(ruta);
+    const nodo = ctx.fs.obtener(ruta, ctx.nombre !== 'find');
     visitar(visible, nodo, nivel);
     if (!nodo.carpeta || nivel >= maximo) return;
     const prefijo = visible.endsWith('/') ? visible : visible + '/';

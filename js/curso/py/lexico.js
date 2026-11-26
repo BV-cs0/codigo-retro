@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const traducir = typeof module !== 'undefined' ? require('../../comun/idioma').t : globalThis.CR.t;
   const fallo = (tipo, linea, mensaje, original = mensaje) => { throw { tipo, linea, mensaje, original }; };
   const palabra = /^[\p{ID_Start}_][\p{ID_Continue}]*/u;
   const numero = /^(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?/;
@@ -15,13 +16,13 @@
         llaves--;
       }
     }
-    fallo('SyntaxError', linea, 'Falta cerrar una llave de la f-string.');
+    fallo('SyntaxError', linea, traducir("curso.falta_cerrar_una_llave_de"));
   }
   function citaDe(texto, linea) {
     if (!/^f?["']/.test(texto)) return null;
     if (texto[0] !== 'f') {
       const cita = cadena.exec(texto);
-      if (!cita) fallo('SyntaxError', linea, 'Faltan las comillas de cierre.',
+      if (!cita) fallo('SyntaxError', linea, traducir("curso.faltan_las_comillas_de_cierre"),
         'unterminated string literal (detected at line ' + linea + ')');
       return { valor: cita[0], contenido: cita[2] };
     }
@@ -43,10 +44,10 @@
         partes.push(literal, { expresion: texto.slice(i + 1, fin) });
         literal = '';
         i = fin;
-      } else if (c === '}') fallo('SyntaxError', linea, 'Revisa las llaves de la f-string.');
+      } else if (c === '}') fallo('SyntaxError', linea, traducir("curso.revisa_las_llaves_de_la"));
       else literal += c;
     }
-    fallo('SyntaxError', linea, 'Faltan las comillas de cierre de la f-string.');
+    fallo('SyntaxError', linea, traducir("curso.faltan_las_comillas_de_cierre_2"));
   }
   function tokens(texto, linea, columna = 1) {
     const salida = [];
@@ -54,7 +55,7 @@
       const espacio = /^[ \t]+/.exec(texto);
       const cita = citaDe(texto, linea);
       const valor = cita?.valor || (espacio || numero.exec(texto) || palabra.exec(texto) || simbolo.exec(texto))?.[0];
-      if (!valor) fallo('SyntaxError', linea, 'Este símbolo no se reconoce.');
+      if (!valor) fallo('SyntaxError', linea, traducir("curso.este_simbolo_no_se_reconoce"));
       if (!espacio) salida.push({ valor, cita, linea, columna });
       columna += valor.length;
       texto = texto.slice(valor.length);
@@ -71,7 +72,7 @@
       sangrias.pop();
       salidas.push({ tipo: 'DEDENT', linea, columna });
     }
-    if (nivel !== sangrias.at(-1)) fallo('IndentationError', linea, 'Esta sangría no coincide con ninguna anterior.');
+    if (nivel !== sangrias.at(-1)) fallo('IndentationError', linea, traducir("curso.esta_sangria_no_coincide_con"));
   }
   function leer(codigo) {
     const salida = [], sangrias = [0], aperturas = [];
@@ -93,7 +94,7 @@
         if (['(', '[', '{'].includes(t.valor)) aperturas.push(t);
         if ([')', ']', '}'].includes(t.valor)) {
           const a = aperturas.pop();
-          if (a?.valor !== { ')': '(', ']': '[', '}': '{' }[t.valor]) fallo('SyntaxError', t.linea, 'Revisa los paréntesis, corchetes y llaves.');
+          if (a?.valor !== { ')': '(', ']': '[', '}': '{' }[t.valor]) fallo('SyntaxError', t.linea, traducir("curso.revisa_los_parentesis_corchetes_y"));
         }
         actual.partes.push(t);
       }
@@ -103,7 +104,7 @@
         actual = null;
       }
     });
-    if (aperturas.length) fallo('SyntaxError', aperturas[0].linea, 'Falta cerrar un paréntesis o corchete.');
+    if (aperturas.length) fallo('SyntaxError', aperturas[0].linea, traducir("curso.falta_cerrar_un_parentesis_o"));
     reajustar(salida, sangrias, 0, lineas.length, 1);
     return salida;
   }

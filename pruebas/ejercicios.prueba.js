@@ -3,21 +3,21 @@ const assert = require('node:assert/strict');
 const ejercicios = require('./datos-ejercicios');
 const { comprobar, ejecutar } = require('../js/ejercicios/validar');
 const orden = require('../js/ejercicios/ordenar');
-function probarEjercicios(prueba) {
-  prueba('Taller: 55 ejercicios con identificadores únicos', () => {
-    assert.equal(ejercicios.length, 55);
-    assert.equal(new Set(ejercicios.map(e => e.id)).size, 55);
+function probarEjercicios(prueba, fichas, idioma) {
+  prueba('Taller ' + idioma + ' · 55 ejercicios con identificadores únicos', () => {
+    assert.equal(fichas.length, 55);
+    assert.equal(new Set(fichas.map(e => e.id)).size, 55);
   });
-  for (const e of ejercicios) {
-    prueba(e.id + ' acepta la solución', () => {
+  for (const e of fichas) {
+    prueba(idioma + ' · ' + e.id + ' acepta la solución', () => {
       const r = comprobar(e, e.solucion);
       assert.equal(r.ok, true, JSON.stringify(r.checks.filter(f => !f.ok)));
     });
-    prueba(e.id + ' rechaza el inicio', () => {
+    prueba(idioma + ' · ' + e.id + ' rechaza el inicio', () => {
       const inicial = e.tipo === 'ordena' ? orden.montar(orden.crear(e, () => 0.99)) : e.codigo;
       assert.equal(comprobar(e, inicial).ok, false);
     });
-    if (e.alternativa) prueba(e.id + ' acepta la alternativa', () => assert.equal(comprobar(e, e.alternativa).ok, true));
+    if (e.alternativa) prueba(idioma + ' · ' + e.id + ' acepta la alternativa', () => assert.equal(comprobar(e, e.alternativa).ok, true));
   }
 }
 function probarVeredictos(prueba) {
@@ -84,7 +84,8 @@ function probarOrden(prueba) {
 }
 
 module.exports = prueba => {
-  probarEjercicios(prueba);
+  probarEjercicios(prueba, ejercicios, 'es');
+  probarEjercicios(prueba, ejercicios.en, 'en');
   probarVeredictos(prueba);
   probarInterprete(prueba);
   probarOrden(prueba);

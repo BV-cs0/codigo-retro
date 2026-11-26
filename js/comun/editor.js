@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const traducir = typeof module !== 'undefined' ? require('./idioma').t : globalThis.CR.t;
   const palabra = /^(for|in|range|if|else|not|def)$/;
 
   const palabraCurso = /^(elif|while|break|continue|return|True|False|None|and|or|pass|print|len|try|except|finally|raise|input|import|from|as|del)$/;
@@ -105,7 +106,7 @@
       const { entrada, espejo, numeros, ordenes, linea, clase, nivel } = this;
       pintarFilas(entrada, espejo, numeros, ordenes, linea, clase, nivel.lenguaje || nivel.curso);
       const cantidad = window.CR.Python.contarLineas(entrada.value);
-      this.contador.textContent = 'Líneas: ' + cantidad + (nivel.maxLineas ? ' / ' + nivel.maxLineas : '');
+      this.contador.textContent = traducir("comun.lineas") + cantidad + (nivel.maxLineas ? ' / ' + nivel.maxLineas : '');
       this.sincronizar();
     }
 

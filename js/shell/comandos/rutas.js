@@ -1,38 +1,40 @@
 (function (CR) {
 'use strict';
+const traducir = typeof module !== 'undefined' ? require('../../comun/idioma').t : globalThis.CR.t;
 const Shell = CR.Shell = CR.Shell || {};
 const { S, registrar: R, opciones, operar } = typeof module !== 'undefined' ? require('./base') : Shell.Base;
 const q = nombre => "'" + nombre + "'";
-R('pwd', 'Muestra la ruta actual.', ['pwd', 'cd /srv; pwd'], c => { opciones(c); c.out(c.sesion.cwd + '\n'); });
-R('cd', 'Cambia de carpeta.', ['cd /var/log', 'cd -'], c => {
+R('pwd', traducir("shell.muestra_la_ruta_actual"), ['pwd', 'cd /srv; pwd'], c => { opciones(c); c.out(c.sesion.cwd + '\n'); });
+R('cd', traducir("shell.cambia_de_carpeta"), ['cd /var/log', 'cd -'], c => {
   if (c.args.length > 1) return c.error('bash: cd: too many arguments');
   const arg = c.args[0] ?? c.sesion.vars.HOME;
+  if (arg === undefined) return c.error('bash: cd: HOME not set');
   if (arg.startsWith('-') && arg !== '-') return c.invalido(arg);
   const ruta = c.ruta(arg === '-' ? c.sesion.vars.OLDPWD || '' : arg);
   if (arg === '-' && !c.sesion.vars.OLDPWD) return c.error('bash: cd: OLDPWD not set');
   operar(c, [arg], a => a, () => {
     const nodo = c.fs.obtener(ruta);
     if (!nodo.carpeta) S.fallo('Not a directory');
-    if (!S.permite(nodo, 'x')) S.fallo('Permission denied');
+    if (!c.sesion.fs.permite(nodo, 'x')) S.fallo('Permission denied');
     c.sesion.vars.OLDPWD = c.sesion.cwd;
     c.sesion.cwd = c.sesion.vars.PWD = ruta;
     c.sesion.visitadas.add(ruta);
     if (arg === '-') c.out(ruta + '\n');
   });
-}, { '~': 'va a tu casa', '..': 'sube una carpeta', '-': 'vuelve a la carpeta anterior' });
-R('touch', 'Crea archivos vacíos o actualiza la fecha.', ['touch nota.txt', 'touch uno.txt dos.txt'], c => {
+}, { '~': traducir("shell.va_a_tu_casa"), '..': traducir("shell.sube_una_carpeta"), '-': traducir("shell.vuelve_a_la_carpeta_anterior") });
+R('touch', traducir("shell.crea_archivos_vacios_o_actualiza"), ['touch nota.txt', 'touch uno.txt dos.txt'], c => {
   operar(c, opciones(c).args, a => 'cannot touch ' + q(a), (_, r) => {
     const nodo = c.fs.acceso(r);
     if (!nodo) c.fs.escribir(r, '');
-    else if (S.permite(nodo, 'w')) nodo.fecha = S.FECHA;
+    else if (c.sesion.fs.permite(nodo, 'w')) nodo.fecha = S.FECHA;
     else S.fallo('Permission denied');
   });
 });
-R('mkdir', 'Crea carpetas.', ['mkdir fotos', 'mkdir -p almacen/fotos'], c => {
+R('mkdir', traducir("shell.crea_carpetas"), ['mkdir fotos', 'mkdir -p almacen/fotos'], c => {
   const { args, flags } = opciones(c, 'p');
   operar(c, args, a => 'cannot create directory ' + q(a), (_, r) => c.fs.crear(r, flags.p));
-}, { '-p': 'crea las carpetas necesarias' });
-R('rmdir', 'Borra carpetas vacías.', ['rmdir vieja', 'rmdir vieja otra'], c => {
+}, { '-p': traducir("shell.crea_las_carpetas_necesarias") });
+R('rmdir', traducir("shell.borra_carpetas_vacias"), ['rmdir vieja', 'rmdir vieja otra'], c => {
   operar(c, opciones(c).args, a => 'failed to remove ' + q(a), (_, r) => {
     const nodo = c.fs.obtener(r);
     if (!nodo.carpeta) S.fallo('Not a directory');
@@ -48,11 +50,11 @@ function eliminar(c, args, flags, indice = 0) {
     const borrar = () => {
       operar(c, [arg], a => 'cannot remove ' + q(a), () => {
         c.fs.borrar(ruta, flags.r, peligro);
-        if (peligro) c.sesion.aviso = 'Eso borraría datos de verdad en Linux. Usa ↺ Reiniciar misión para recuperar el faro.';
+        if (peligro) c.sesion.aviso = traducir("shell.eso_borraria_datos_de_verdad");
       });
     };
     let nodo;
-    try { nodo = c.fs.acceso(ruta); }
+    try { nodo = c.fs.acceso(ruta, false); }
     catch (e) { if (!flags.f || e.message !== 'No such file or directory') borrar(); continue; }
     if (!nodo && flags.f) continue;
     if (flags.i && nodo && (!nodo.carpeta || flags.r)) {
@@ -66,7 +68,7 @@ function eliminar(c, args, flags, indice = 0) {
     borrar();
   }
 }
-R('rm', 'Borra archivos o carpetas.', ['rm *.tmp', 'rm -i nota.txt'], c => {
+R('rm', traducir("shell.borra_archivos_o_carpetas"), ['rm *.tmp', 'rm -i nota.txt'], c => {
   const flags = { r: false, f: false, i: false };
   const args = [];
   let leer = true;
@@ -81,10 +83,10 @@ R('rm', 'Borra archivos o carpetas.', ['rm *.tmp', 'rm -i nota.txt'], c => {
   }
   if (!args.length && !flags.f) return c.error('rm: missing operand');
   eliminar(c, args, flags);
-}, { '-r': 'recorre carpetas', '-f': 'ignora archivos ausentes', '-i': 'pide confirmación' });
+}, { '-r': traducir("shell.recorre_carpetas"), '-f': traducir("shell.ignora_archivos_ausentes"), '-i': traducir("shell.pide_confirmacion") });
 for (const mover of [false, true]) {
   const nombre = mover ? 'mv' : 'cp';
-  R(nombre, mover ? 'Mueve o renombra archivos.' : 'Copia archivos y carpetas.',
+  R(nombre, mover ? traducir("shell.mueve_o_renombra_archivos") : traducir("shell.copia_archivos_y_carpetas"),
     [nombre + ' nota.txt copia.txt', nombre + (mover ? ' fotos almacen/' : ' -r fotos copia')], c => {
       const { args, flags } = opciones(c, mover ? '' : 'rR');
       if (!args.length) return c.error(nombre + ': missing file operand');
@@ -104,10 +106,10 @@ for (const mover of [false, true]) {
           else if (e.message === 'No such file or directory' && !c.fs.nodos.has(origen)) {
             c.error(nombre + ': cannot stat ' + q(arg) + ': ' + e.message);
           } else if (e.message === 'are the same file') c.error(nombre + ': ' + q(arg) + ' and ' + q(destino) + ' are the same file');
-          else c.error(nombre + ': cannot ' + (mover ? 'move ' : 'copy ') + q(arg) + ' to ' + q(destino) + ': ' + e.message);
+          else c.error(nombre + ': cannot ' + (mover ? 'move ' : 'copy ') + q(arg) + " to " + q(destino) + ': ' + e.message);
         }
       }
-    }, mover ? {} : { '-r': 'copia carpetas recursivamente' });
+    }, mover ? {} : { '-r': traducir("shell.copia_carpetas_recursivamente") });
 }
 function cambiarModo(modo, original, carpeta = false) {
   if (/^[0-7]{3}$/.test(modo)) return [...modo].map(d =>
@@ -115,7 +117,7 @@ function cambiarModo(modo, original, carpeta = false) {
   const permisos = [...original];
   for (const operacion of modo.split(',')) {
     const partes = operacion.match(/^([ugoa]*)([+=-])([rwxXugo]*)$/);
-    if (!partes) S.fallo('invalid mode: ' + q(modo));
+    if (!partes) S.fallo("invalid mode: " + q(modo));
     const [, quien, op, letras] = partes;
     const grupos = !quien || quien.includes('a') ? 'ugo' : quien;
     const anterior = permisos.join('');
@@ -129,18 +131,19 @@ function cambiarModo(modo, original, carpeta = false) {
   }
   return permisos.join('');
 }
-R('chmod', 'Cambia los permisos de un archivo.', ['chmod 600 secretos.txt', 'chmod u+x faro.sh'], c => {
+R('chmod', traducir("shell.cambia_los_permisos_de_un_archivo"), ['chmod 600 secretos.txt', 'chmod u+x faro.sh'], c => {
   const [modo, ...args] = c.args;
   if (modo?.startsWith('--')) return c.invalido(modo);
   if (!args.length) return c.error('chmod: missing operand');
   try { cambiarModo(modo, '---------'); }
   catch (e) { return c.error('chmod: ' + e.message); }
-  operar(c, args, a => 'changing permissions of ' + q(a), (_, r) => {
+  operar(c, args, a => "changing permissions of " + q(a), (_, r) => {
     const nodo = c.fs.obtener(r);
-    if (nodo.dueno !== 'aprendiz') S.fallo('Operation not permitted');
+    const usuario = c.sesion.identidad.usuario;
+    if (nodo.dueno !== usuario && usuario !== 'root') S.fallo('Operation not permitted');
     nodo.permisos = cambiarModo(modo, nodo.permisos, nodo.carpeta);
   });
-}, { '755': 'modo numérico', 'u+x': 'da ejecución al dueño', 'go-w': 'quita escritura al grupo y al resto', 'a+r': 'da lectura a todos' });
+}, { '755': traducir("shell.modo_numerico"), 'u+x': traducir("shell.da_ejecucion_al_dueno"), 'go-w': traducir("shell.quita_escritura_al_grupo_y"), 'a+r': traducir("shell.da_lectura_a_todos") });
 Shell.Rutas = { cambiarModo };
 if (typeof module !== 'undefined') module.exports = CR.Shell.Rutas;
 })(globalThis.CR = globalThis.CR || {});

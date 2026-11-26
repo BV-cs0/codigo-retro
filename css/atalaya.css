@@ -1,0 +1,24 @@
+body.atalaya { background: #080f20; color: #e9f0ff; }
+.atalaya .faro-cabecera h1, .atalaya a { color: #ff999d; }
+.atalaya .faro-panel { background: #11203a; border-color: #3d5374; }
+.atalaya .crt { --luz: #9affba; border-color: #3a6071; background: #071713; }
+.atalaya .faro-panel :is(h2, h3), .atalaya #chuleta dt { color: #a4fbc0; }
+
+.atalaya :is(button, select) { background: #192e4b; border-color: #577395; }
+.atalaya :is(button, a):focus-visible { outline-color: #a4fbc0; }
+.atalaya button[aria-pressed="true"] { border-color: #a4fbc0; color: #a4fbc0; }
+.atalaya .pantalla-crt { height: min(65vh, 650px); }
+.atalaya #texto-pista { color: #ffb1a3; }
+.atalaya canvas { width: 64px; height: 64px; image-rendering: pixelated; }
+.atalaya dialog { color: inherit; width: min(480px, calc(100% - 32px)); }
+.atalaya dialog::backdrop { background: #030812dc; }
+.atalaya [hidden] { display: none; }
+#categorias { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 10px; margin-bottom: 18px; }
+#categorias button { display: block; width: 100%; margin: .5em 0; text-align: left; }
+#ver-final { margin-bottom: 12px; }
+.tarjeta-atalaya { --marco: #e27b88; --tema: #a4fbc0; --escena: #11203a; }
+.tarjeta-atalaya .escena { background: #11203a; }
+.tarjeta-atalaya canvas { width: 88px; height: 88px; image-rendering: pixelated; }
+.lema-atalaya { margin: -.4rem 0 1rem; color: #a4fbc0; font-size: .82em; letter-spacing: .18em; text-transform: uppercase; text-shadow: 0 0 6px #a4fbc066; }
+.lema-atalaya { text-wrap: balance; }
+@media (max-width: 480px) { .lema-atalaya { letter-spacing: .08em; } }

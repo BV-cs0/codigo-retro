@@ -1,8 +1,45 @@
 (function () {
   'use strict';
+  const traducir = typeof module !== 'undefined' ? require('../comun/idioma').t : globalThis.CR.t;
   const { Py, Sonido } = window.CR;
   const $ = id => document.getElementById(id);
   const nodo = (tag, texto) => Object.assign(document.createElement(tag), { textContent: texto });
+  function mostrar(estado) {
+    $('variables').replaceChildren(...Object.entries(estado.variables).map(([n, v]) => {
+      const fila = nodo('tr', '');
+      fila.append(Object.assign(nodo('th', n), { scope: 'row' }), nodo('td', v));
+      return fila;
+    }));
+    $('llamadas').replaceChildren(...estado.llamadas.map(l => nodo('li', l)));
+    const terminal = $('salida').parentElement;
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+
+  function mostrarError(error) {
+    if (!error) return;
+    $('error-consola').textContent = error.tipo + traducir("curso.linea") + error.linea + ')\n' + error.mensaje;
+    $('error-original').textContent = error.tipo + ': ' + (error.original ?? error.mensaje);
+  }
+
+  function ejecutarBash(codigo, ficha) {
+    const r = window.CR.Shell.Bash.correr(codigo, ficha);
+    $('salida').textContent = r.salida + traducir("curso.salio_con_codigo") + r.codigo + ']';
+    $('error-consola').textContent = r.stderr;
+    $('error-original').textContent = r.guia.join('\n');
+    mostrar({ variables: Object.fromEntries(Object.entries(r.variables).filter(([, v]) => v !== undefined)), llamadas: [] });
+  }
+
+  function conectarEntrada(ciclo, activo) {
+    $('entrada-terminal').onsubmit = e => {
+      e.preventDefault();
+      const texto = $('entrada').value;
+      $('salida').append(Object.assign(nodo('span', texto + '\n'), { className: 'eco-terminal' }));
+      $('entrada-terminal').hidden = true;
+      ciclo(texto);
+      if (!activo()) $('ejecutar').focus();
+    };
+  }
+
   function crear(editor, bloqueo) {
     let programa, temporizador;
     function detener() {
@@ -11,28 +48,16 @@
       $('entrada-terminal').hidden = true;
       bloqueo(false);
     }
-    function mostrar(estado) {
-      $('variables').replaceChildren(...Object.entries(estado.variables).map(([n, v]) => {
-        const fila = nodo('tr', '');
-        fila.append(Object.assign(nodo('th', n), { scope: 'row' }), nodo('td', v));
-        return fila;
-      }));
-      $('llamadas').replaceChildren(...estado.llamadas.map(l => nodo('li', l)));
-      const terminal = $('salida').parentElement;
-      terminal.scrollTop = terminal.scrollHeight;
-    }
     function limpiar() {
       detener();
       for (const id of ['salida', 'error-consola', 'error-original']) $(id).textContent = '';
       editor.destacar(0);
-      mostrar({ variables: {}, llamadas: ['programa principal'] });
+      mostrar({ variables: {}, llamadas: [traducir("curso.programa_principal")] });
     }
     function terminar(r) {
       detener();
       editor.destacar(r.error?.linea || 0, r.error?.tipo);
-      if (!r.error) return;
-      $('error-consola').textContent = r.error.tipo + ' (línea ' + r.error.linea + ')\n' + r.error.mensaje;
-      $('error-original').textContent = r.error.tipo + ': ' + (r.error.original ?? r.error.mensaje);
+      mostrarError(r.error);
     }
     function ciclo(entrada) {
       let r;
@@ -52,26 +77,12 @@
     function ejecutar(codigo, ficha) {
       limpiar();
       Sonido.activar();
-      if (ficha?.lenguaje === 'bash') {
-        const r = window.CR.Shell.Bash.correr(codigo, ficha);
-        $('salida').textContent = r.salida + '[salió con código ' + r.codigo + ']';
-        $('error-consola').textContent = r.stderr;
-        $('error-original').textContent = r.guia.join('\n');
-        mostrar({ variables: Object.fromEntries(Object.entries(r.variables).filter(([, v]) => v !== undefined)), llamadas: [] });
-        return;
-      }
+      if (ficha?.lenguaje === 'bash') return ejecutarBash(codigo, ficha);
       programa = Py.ejecutar(codigo);
       bloqueo(true);
       ciclo();
     }
-    $('entrada-terminal').onsubmit = e => {
-      e.preventDefault();
-      const texto = $('entrada').value;
-      $('salida').append(Object.assign(nodo('span', texto + '\n'), { className: 'eco-terminal' }));
-      $('entrada-terminal').hidden = true;
-      ciclo(texto);
-      if (!programa) $('ejecutar').focus();
-    };
+    conectarEntrada(ciclo, () => Boolean(programa));
     return { ejecutar, limpiar, detener };
   }
   window.CR.EjecucionTaller = { crear };

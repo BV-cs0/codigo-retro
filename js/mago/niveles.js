@@ -36,6 +36,9 @@
       solucion: 'def tramo():\n' + rutina + '\nfor i in range(3):\n    tramo()'
     }
   ]);
-  if (typeof window !== 'undefined') (window.CR ||= {}).NivelesMago = niveles;
+  if (typeof window !== 'undefined') {
+    window.CR.NivelesMago = niveles;
+    window.CR.Idioma.registrar('es', 'mago', niveles);
+  }
   if (nodo) module.exports = niveles;
 })();

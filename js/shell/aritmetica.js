@@ -1,5 +1,6 @@
 (function (Shell) {
 'use strict';
+const traducir = typeof module !== 'undefined' ? require('../comun/idioma').t : globalThis.CR.t;
 const niveles = [['==', '!='], ['<', '<=', '>', '>='], ['+', '-'], ['*', '/', '%']];
 const operaciones = {
   '+': (a, b) => a + b, '-': (a, b) => a - b, '*': (a, b) => a * b,
@@ -12,7 +13,7 @@ const entero = n => BigInt.asIntN(64, n);
 const asignaciones = ['=', '+=', '-=', '*=', '/=', '%='];
 const tokenizar = texto => texto.match(/\$?[a-zA-Z_]\w*|\$[0-9]|\d+|\+\+|--|\*\*|[=!<>+*/%-]=|[^\s]/g) || [];
 function potencia(base, exponente) {
-  if (exponente < 0n) throw new Error('Exponente negativo en la expresión aritmética.');
+  if (exponente < 0n) throw new Error(traducir("shell.exponente_negativo_en_la_expresion"));
   let n = 1n;
   for (; exponente; exponente >>= 1n) {
     if (exponente & 1n) n = entero(n * base);
@@ -26,11 +27,11 @@ function guardar(vars, clave, op, izquierda, derecha) {
   return n;
 }
 function literal(t) {
-  if (/^0\d*[89]/.test(t)) throw new Error('Número octal incorrecto.');
+  if (/^0\d*[89]/.test(t)) throw new Error(traducir("shell.numero_octal_incorrecto"));
   return entero(BigInt(/^0\d/.test(t) ? '0o' + t : t));
 }
 function calcular(texto, vars, profundidad = 0) {
-  if (profundidad >= 100) throw new Error('Referencia aritmética circular.');
+  if (profundidad >= 100) throw new Error(traducir("shell.referencia_aritmetica_circular"));
   const tokens = tokenizar(texto);
   let i = 0;
   const valor = clave => calcular(vars[clave] || '0', vars, profundidad + 1);
@@ -42,11 +43,11 @@ function calcular(texto, vars, profundidad = 0) {
     }
     if (t === '(') {
       const n = asignacion();
-      if (tokens[i++] !== ')') throw new Error('Falta un paréntesis en la expresión.');
+      if (tokens[i++] !== ')') throw new Error(traducir("shell.falta_un_parentesis_en_la"));
       return n;
     }
     if (/^\d+$/.test(t)) return literal(t);
-    if (!/^\$?(?:[a-zA-Z_]\w*|\d)$/.test(t ?? '')) throw new Error('Expresión aritmética incorrecta.');
+    if (!/^\$?(?:[a-zA-Z_]\w*|\d)$/.test(t ?? '')) throw new Error(traducir("shell.expresion_aritmetica_incorrecta"));
     const clave = t.replace(/^\$/, '');
     const n = valor(clave);
     if (['++', '--'].includes(tokens[i])) vars[clave] = String(entero(n + (tokens[i++] === '++' ? 1n : -1n)));
@@ -74,7 +75,7 @@ function calcular(texto, vars, profundidad = 0) {
     return guardar(vars, clave, op, izquierda, asignacion());
   }
   const n = asignacion();
-  if (i !== tokens.length) throw new Error('Expresión aritmética fuera del subconjunto admitido.');
+  if (i !== tokens.length) throw new Error(traducir("shell.expresion_aritmetica_fuera_del_subconjunto"));
   return n;
 }
 Shell.Aritmetica = { calcular };

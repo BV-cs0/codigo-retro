@@ -3,58 +3,64 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Taller de ejercicios — Código Retro</title>
-  <link rel="stylesheet" href="css/estilo.css">
-  <link rel="stylesheet" href="css/curso.css">
-  <link rel="stylesheet" href="css/taller.css">
+  <title data-t="ejercicios.taller_de_ejercicios_codigo_retro">Taller de ejercicios — Código Retro</title>
+  <link rel="stylesheet" href="css/estilo.css?v=1.3.0">
+  <link rel="stylesheet" href="css/curso.css?v=1.3.0">
+  <link rel="stylesheet" href="css/taller.css?v=1.3.0">
 </head>
 <body class="curso taller">
   <header class="barra">
-    <h1>Taller de ejercicios</h1>
-    <nav aria-label="Navegación del Taller">
-      <a class="boton" href="index.html">← Menú principal</a>
-      <button id="volver" hidden>← Todos los ejercicios</button>
-      <button id="sonido">Silenciar</button>
+    <h1 data-t="ejercicios.taller_de_ejercicios">Taller de ejercicios</h1>
+    <nav aria-label="Navegación del Taller" data-t-aria="ejercicios.navegacion_del_taller">
+      <a class="boton" href="index.html" data-t="apoya.menu_principal">← Menú principal</a>
+      <button id="volver" hidden data-t="ejercicios.todos_los_ejercicios">← Todos los ejercicios</button>
+      <button id="sonido" data-t="bash.silenciar">Silenciar</button>
+
+    <div class="selector-idioma" role="group" aria-label="Idioma" data-t-aria="idioma.selector">
+      <button type="button" data-idioma="es" aria-pressed="true" aria-label="Español" data-t-aria="idioma.es">ES</button>
+      <span aria-hidden="true">|</span>
+      <button type="button" data-idioma="en" aria-pressed="false" aria-label="Inglés" data-t-aria="idioma.en">EN</button>
+    </div>
     </nav>
   </header>
   <main class="contenedor">
     <section id="lista-taller" aria-labelledby="titulo-lista">
-      <div class="cabecera-partida"><h2 id="titulo-lista" tabindex="-1">Ejercicios de Python</h2>
+      <div class="cabecera-partida"><h2 id="titulo-lista" tabindex="-1" data-t="ejercicios.ejercicios_de_python">Ejercicios de Python</h2>
         <strong id="total-taller" role="status"></strong>
       </div>
       <div id="barras-taller"></div>
       <div class="controles filtros">
-        <label>Lenguaje <select id="filtro-lenguaje"><option value="">Todos</option><option value="python">Python</option><option value="bash">Bash</option></select></label>
-        <label>Tema <select id="filtro-tema"><option value="">Todos</option></select></label>
-        <label>Dificultad <select id="filtro-dificultad"><option value="">Todas</option></select></label>
-        <label>Estado <select id="filtro-estado">
-          <option value="">Todos</option><option value="pendiente">Sin hacer</option><option value="resuelto">Resueltos</option>
+        <label><span data-t="ejercicios.lenguaje">Lenguaje</span> <select id="filtro-lenguaje"><option value="" data-t="ejercicios.todos">Todos</option><option value="python" data-t="ejercicios.python">Python</option><option value="bash" data-t="ejercicios.bash">Bash</option></select></label>
+        <label><span data-t="ejercicios.tema">Tema</span> <select id="filtro-tema"><option value="" data-t="ejercicios.todos">Todos</option></select></label>
+        <label><span data-t="ejercicios.dificultad">Dificultad</span> <select id="filtro-dificultad"><option value="" data-t="ejercicios.todas">Todas</option></select></label>
+        <label><span data-t="ejercicios.estado">Estado</span> <select id="filtro-estado">
+          <option value="" data-t="ejercicios.todos">Todos</option><option value="pendiente" data-t="ejercicios.sin_hacer">Sin hacer</option><option value="resuelto" data-t="ejercicios.resueltos">Resueltos</option>
         </select></label>
-        <button id="azar">Ejercicio al azar (sin hacer)</button>
+        <button id="azar" data-t="ejercicios.ejercicio_al_azar_sin_hacer">Ejercicio al azar (sin hacer)</button>
       </div>
-      <p id="sin-fichas" hidden>No hay ejercicios con estos filtros.</p>
+      <p id="sin-fichas" hidden data-t="ejercicios.no_hay_ejercicios_con_estos_filtros">No hay ejercicios con estos filtros.</p>
       <div id="fichas-taller"></div>
     </section>
     <section id="detalle-taller" aria-labelledby="titulo-ejercicio" hidden>
       <p id="etiqueta-ejercicio"></p>
       <h2 id="titulo-ejercicio" tabindex="-1"></h2>
       <div class="columnas">
-        <section class="panel leccion" aria-label="Enunciado">
+        <section class="panel leccion" aria-label="Enunciado" data-t-aria="ejercicios.enunciado">
           <div id="enunciado"></div>
           <pre id="ejemplo"></pre>
-          <div class="controles"><button id="pista">💡 Pista</button><button id="solucion" hidden>Ver solución</button></div>
+          <div class="controles"><button id="pista" data-t="ejercicios.pista">💡 Pista</button><button id="solucion" hidden data-t="ejercicios.ver_solucion">Ver solución</button></div>
           <p id="ayuda" role="status"></p>
           <div id="veredicto" role="status" hidden>
             <h3 id="titular-veredicto"></h3>
             <ul id="comprobaciones"></ul>
-            <p id="animo" hidden>¡Bien hecho! Has superado las comprobaciones.</p>
-            <details id="alternativa" hidden><summary>Otra forma de hacerlo</summary><pre id="codigo-alternativo"></pre></details>
+            <p id="animo" hidden data-t="ejercicios.bien_hecho_has_superado_las_comprobaciones">¡Bien hecho! Has superado las comprobaciones.</p>
+            <details id="alternativa" hidden><summary data-t="ejercicios.otra_forma_de_hacerlo">Otra forma de hacerlo</summary><pre id="codigo-alternativo"></pre></details>
           </div>
-          <button id="siguiente-ejercicio" hidden>Siguiente ejercicio del mismo tema</button>
+          <button id="siguiente-ejercicio" hidden data-t="ejercicios.siguiente_ejercicio_del_mismo_tema">Siguiente ejercicio del mismo tema</button>
         </section>
         <section class="panel">
           <div id="zona-texto">
-            <div class="cabecera-editor"><label for="codigo">Editor</label><span id="contador"></span></div>
+            <div class="cabecera-editor"><label for="codigo" data-t="curso.editor">Editor</label><span id="contador"></span></div>
             <div class="editor">
               <div id="numeros" aria-hidden="true"></div>
               <div class="fuente-codigo">
@@ -62,81 +68,102 @@
                 <textarea id="codigo" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="ayuda-editor"></textarea>
               </div>
             </div>
-            <p id="ayuda-editor">Tab añade sangría. Pulsa Esc y luego Tab para salir del editor.</p>
+            <p id="ayuda-editor" data-t="bash.tab_anade_sangria_pulsa_esc_y">Tab añade sangría. Pulsa Esc y luego Tab para salir del editor.</p>
             <p id="error"></p>
           </div>
           <div id="zona-orden" hidden>
-            <h3>Ordena las líneas</h3>
-            <p id="ayuda-orden">Usa ↑ y ↓ para mover una línea. Usa ← y → o Mayús+↑ y Mayús+↓ para ajustar su sangría.</p>
+            <h3 data-t="ejercicios.ordena_las_lineas">Ordena las líneas</h3>
+            <p id="ayuda-orden" data-t="ejercicios.usa_y_para_mover_una_linea">Usa ↑ y ↓ para mover una línea. Usa ← y → o Mayús+↑ y Mayús+↓ para ajustar su sangría.</p>
             <ol id="lineas-orden" aria-describedby="ayuda-orden"></ol>
           </div>
           <div class="controles">
-            <button id="ejecutar">▶ Ejecutar</button>
-            <button id="comprobar" class="primario">✔ Comprobar</button>
-            <button id="parar" disabled>■ Parar</button>
+            <button id="ejecutar" data-t="bash.ejecutar">▶ Ejecutar</button>
+            <button id="comprobar" class="primario" data-t="bash.comprobar">✔ Comprobar</button>
+            <button id="parar" disabled data-t="bash.parar">■ Parar</button>
           </div>
         </section>
         <section id="resultado" class="panel">
-          <h3>Consola</h3>
-          <div class="terminal" tabindex="0" aria-label="Salida de consola">
+          <h3 data-t="bash.consola">Consola</h3>
+          <div class="terminal" tabindex="0" aria-label="Salida de consola" data-t-aria="bash.salida_de_consola">
             <pre id="salida"></pre>
             <form id="entrada-terminal" hidden>
-              <input id="entrada" aria-label="Entrada del programa" autocomplete="off" spellcheck="false">
+              <input id="entrada" aria-label="Entrada del programa" data-t-aria="curso.entrada_del_programa" autocomplete="off" spellcheck="false">
             </form>
             <p id="error-consola" role="alert"></p><p id="error-original"></p>
           </div>
-          <h3>Variables</h3>
-          <table aria-label="Variables visibles"><thead><tr><th scope="col">Nombre</th><th scope="col">Valor</th></tr></thead><tbody id="variables"></tbody></table>
-          <h3>Llamadas</h3><ol id="llamadas"></ol>
+          <h3 data-t="bash.variables">Variables</h3>
+          <table aria-label="Variables visibles" data-t-aria="curso.variables_visibles"><thead><tr><th scope="col" data-t="bash.nombre">Nombre</th><th scope="col" data-t="bash.valor">Valor</th></tr></thead><tbody id="variables"></tbody></table>
+          <h3 data-t="curso.llamadas">Llamadas</h3><ol id="llamadas"></ol>
         </section>
       </div>
     </section>
   </main>
-  <script src="js/comun/pixel.js"></script>
-  <script src="js/comun/progreso.js"></script>
-  <script src="js/comun/python.js"></script>
-  <script src="js/comun/editor.js"></script>
-  <script src="js/comun/sonido.js"></script>
-  <script src="js/curso/py/lexico.js"></script>
-  <script src="js/curso/py/sintaxis.js"></script>
-  <script src="js/curso/py/valores.js"></script>
-  <script src="js/curso/py/integradas.js"></script>
-  <script src="js/curso/py/modulos.js"></script>
-  <script src="js/curso/py/interprete.js"></script>
-  <script src="js/ejercicios/primeros.js"></script>
-  <script src="js/ejercicios/variables.js"></script>
-  <script src="js/ejercicios/condiciones.js"></script>
-  <script src="js/ejercicios/bucles.js"></script>
-  <script src="js/ejercicios/listas.js"></script>
-  <script src="js/ejercicios/funciones.js"></script>
-  <script src="js/ejercicios/textos.js"></script>
-  <script src="js/ejercicios/diccionarios.js"></script>
-  <script src="js/ejercicios/errores.js"></script>
-  <script src="js/ejercicios/entrada.js"></script>
-  <script src="js/ejercicios/retos.js"></script>
-  <script src="js/shell/sfa.js"></script>
-  <script src="js/shell/lexico.js"></script>
-  <script src="js/shell/analizador.js"></script>
-  <script src="js/shell/aritmetica.js"></script>
-  <script src="js/shell/expansion.js"></script>
-  <script src="js/shell/comandos/base.js"></script>
-  <script src="js/shell/comandos/rutas.js"></script>
-  <script src="js/shell/comandos/listado.js"></script>
-  <script src="js/shell/comandos/texto.js"></script>
-  <script src="js/shell/comandos/buscar.js"></script>
-  <script src="js/shell/comandos/diff.js"></script>
-  <script src="js/shell/comandos/sesion.js"></script>
-  <script src="js/shell/ayuda.js"></script>
-  <script src="js/shell/ejecutor.js"></script>
-  <script src="js/shell/bash-sintaxis.js"></script>
-  <script src="js/shell/bash-integradas.js"></script>
-  <script src="js/shell/bash.js"></script>
-  <script src="js/curso/bash-validar.js"></script>
-  <script src="js/ejercicios/bash-retos.js"></script>
-  <script src="js/ejercicios/progreso.js"></script>
-  <script src="js/ejercicios/validar.js"></script>
-  <script src="js/ejercicios/ordenar.js"></script>
-  <script src="js/ejercicios/ejecucion.js"></script>
-  <script src="js/ejercicios/pantalla.js"></script>
+  <script src="js/idiomas/es.js?v=1.3.0"></script>
+  <script src="js/idiomas/en.js?v=1.3.0"></script>
+  <script src="js/comun/idioma.js?v=1.3.0"></script>
+  <script src="js/comun/pixel.js?v=1.3.0"></script>
+  <script src="js/comun/progreso.js?v=1.3.0"></script>
+  <script src="js/comun/python.js?v=1.3.0"></script>
+  <script src="js/comun/editor.js?v=1.3.0"></script>
+  <script src="js/comun/sonido.js?v=1.3.0"></script>
+  <script src="js/curso/py/lexico.js?v=1.3.0"></script>
+  <script src="js/curso/py/sintaxis.js?v=1.3.0"></script>
+  <script src="js/curso/py/valores.js?v=1.3.0"></script>
+  <script src="js/curso/py/integradas.js?v=1.3.0"></script>
+  <script src="js/curso/py/modulos.js?v=1.3.0"></script>
+  <script src="js/curso/py/interprete.js?v=1.3.0"></script>
+  <script src="js/ejercicios/primeros.js?v=1.3.0"></script>
+  <script src="js/ejercicios/variables.js?v=1.3.0"></script>
+  <script src="js/ejercicios/condiciones.js?v=1.3.0"></script>
+  <script src="js/ejercicios/bucles.js?v=1.3.0"></script>
+  <script src="js/ejercicios/listas.js?v=1.3.0"></script>
+  <script src="js/ejercicios/funciones.js?v=1.3.0"></script>
+  <script src="js/ejercicios/textos.js?v=1.3.0"></script>
+  <script src="js/ejercicios/diccionarios.js?v=1.3.0"></script>
+  <script src="js/ejercicios/errores.js?v=1.3.0"></script>
+  <script src="js/ejercicios/entrada.js?v=1.3.0"></script>
+  <script src="js/ejercicios/retos.js?v=1.3.0"></script>
+  <script src="js/shell/sfa.js?v=1.3.0"></script>
+  <script src="js/shell/lexico.js?v=1.3.0"></script>
+  <script src="js/shell/analizador.js?v=1.3.0"></script>
+  <script src="js/shell/aritmetica.js?v=1.3.0"></script>
+  <script src="js/shell/expansion.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/base.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/rutas.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/listado.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/texto.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/buscar.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/diff.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/sesion.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/entorno.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/procesos.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/espacio.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/red.js?v=1.3.0"></script>
+  <script src="js/shell/hashes.js?v=1.3.0"></script>
+  <script src="js/shell/comandos/atalaya.js?v=1.3.0"></script>
+  <script src="js/shell/ayuda.js?v=1.3.0"></script>
+  <script src="js/shell/ejecutor.js?v=1.3.0"></script>
+  <script src="js/shell/bash-sintaxis.js?v=1.3.0"></script>
+  <script src="js/shell/bash-integradas.js?v=1.3.0"></script>
+  <script src="js/shell/bash.js?v=1.3.0"></script>
+  <script src="js/curso/bash-validar.js?v=1.3.0"></script>
+  <script src="js/ejercicios/bash-retos.js?v=1.3.0"></script>
+  <script src="js/ejercicios/en/primeros.js?v=1.3.0"></script>
+  <script src="js/ejercicios/en/variables.js?v=1.3.0"></script>
+  <script src="js/ejercicios/en/condiciones.js?v=1.3.0"></script>
+  <script src="js/ejercicios/en/bucles.js?v=1.3.0"></script>
+  <script src="js/ejercicios/en/listas.js?v=1.3.0"></script>
+  <script src="js/ejercicios/en/funciones.js?v=1.3.0"></script>
+  <script src="js/ejercicios/en/textos.js?v=1.3.0"></script>
+  <script src="js/ejercicios/en/diccionarios.js?v=1.3.0"></script>
+  <script src="js/ejercicios/en/errores.js?v=1.3.0"></script>
+  <script src="js/ejercicios/en/entrada.js?v=1.3.0"></script>
+  <script src="js/ejercicios/en/retos.js?v=1.3.0"></script>
+  <script src="js/ejercicios/en/bash-retos.js?v=1.3.0"></script>
+  <script src="js/ejercicios/progreso.js?v=1.3.0"></script>
+  <script src="js/ejercicios/validar.js?v=1.3.0"></script>
+  <script src="js/ejercicios/ordenar.js?v=1.3.0"></script>
+  <script src="js/ejercicios/ejecucion.js?v=1.3.0"></script>
+  <script src="js/ejercicios/pantalla.js?v=1.3.0"></script>
 </body>
 </html>

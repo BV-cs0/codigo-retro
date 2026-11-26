@@ -1,5 +1,6 @@
 (function (S) {
 'use strict';
+const traducir = typeof module !== 'undefined' ? require('../comun/idioma').t : globalThis.CR.t;
 const numeros = { '-eq': '==', '-ne': '!=', '-lt': '<', '-le': '<=', '-gt': '>', '-ge': '>=' };
 function archivo(op, ruta, sesion) {
   let nodo;
@@ -9,7 +10,7 @@ function archivo(op, ruta, sesion) {
   if (op === '-d') return nodo.carpeta;
   if (op === '-f') return !nodo.carpeta;
   if (op === '-s') return nodo.carpeta || Boolean(nodo.contenido);
-  return S.SFA.permite(nodo, op[1]);
+  return sesion.fs.permite(nodo, op[1]);
 }
 function prueba(args, sesion, doble = false, patron) {
   const [a, op, b] = args;
@@ -63,10 +64,10 @@ function escapes(texto) {
 }
 function imprimir(c) {
   const [formato, ...args] = c.args;
-  if (formato === undefined) return c.error('printf: falta el formato', 2);
+  if (formato === undefined) return c.error(traducir("shell.printf_falta_el_formato"), 2);
   let i = 0;
   const plantilla = escapes(formato);
-  if ([...plantilla.matchAll(/%-?(\d+)s/g)].some(m => Number(m[1]) > 100000)) return c.invalido('ancho de formato');
+  if ([...plantilla.matchAll(/%-?(\d+)s/g)].some(m => Number(m[1]) > 100000)) return c.invalido(traducir("shell.ancho_de_formato"));
   if (/%(?!%|-?\d*s|d|\.2f)/.test(plantilla.replace(/%%/g, ''))) return c.invalido('formato');
   for (;;) {
     const inicial = i;

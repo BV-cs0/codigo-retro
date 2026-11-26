@@ -50,6 +50,6 @@
     CR.Pixel.sprite(ctx, 'granja', x + 1, y - 30, 2, dos && estado.posicion >= 4);
   }
 
-  CR.NivelUI.iniciar({ demo: 'granja', personaje: 'Bina', niveles: CR.NivelesGranja,
-    crear: CR.MundoGranja.crear, dibujar });
+  CR.NivelUI.iniciar({ demo: 'granja', personaje: 'Bina', niveles: CR.Idioma.contenido('granja'),
+    crear: CR.DemoIdioma.crearMundo(CR.MundoGranja.crear), dibujar });
 })();

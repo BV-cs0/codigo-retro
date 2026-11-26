@@ -1,6 +1,6 @@
 (function (CR) {
   'use strict';
-  const { SFA, Ejecutor } = CR.Shell;
+  const { SFA, Ayuda } = CR.Shell;
   function candidatos(fragmento, comandos, s) {
     const ruta = fragmento;
     const corte = ruta.lastIndexOf('/') + 1;
@@ -15,7 +15,7 @@
         return (prefijo + nombre + sufijo).replace(/[ \t"'\\|;<>*&?[$]/g, '\\$&');
       }).filter(Boolean);
     } catch {}
-    const nombres = comandos && !prefijo ? Ejecutor.comandos.filter(n => n.startsWith(ruta)) : [];
+    const nombres = comandos && !prefijo ? Ayuda.nombres(s.idioma).filter(n => n.startsWith(ruta)) : [];
     return [...new Set([...nombres, ...rutas])].sort();
   }
   function fragmento(antes) {

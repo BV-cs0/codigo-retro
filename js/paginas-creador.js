@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const traducir = typeof module !== 'undefined' ? require('./comun/idioma').t : globalThis.CR.t;
   const { DatosCreador, DatosApoyo } = window.CR;
   const $ = id => document.getElementById(id);
   const nodo = (tag, texto) => Object.assign(document.createElement(tag), { textContent: texto });
@@ -40,15 +41,15 @@
       try { copiado = document.execCommand('copy'); } catch { /* El campo permite copiar manualmente. */ }
       if (copiado) campo.hidden = true;
       else {
-        $('estado-compartir').textContent = 'Selecciona y copia este enlace.';
+        $('estado-compartir').textContent = traducir("paginas-creador.selecciona_y_copia_este_enlace");
         return;
       }
     }
-    $('estado-compartir').textContent = 'Enlace copiado.';
+    $('estado-compartir').textContent = traducir("paginas-creador.enlace_copiado");
   }
   function compartir() {
     const nativo = typeof navigator.share === 'function';
-    const b = nodo('button', nativo ? 'Compartir' : 'Copiar enlace');
+    const b = nodo('button', nativo ? traducir("paginas-creador.compartir") : traducir("paginas-creador.copiar_enlace"));
     b.onclick = async () => {
       if (!nativo) return copiar();
       try { await navigator.share({ title: 'Código Retro', url: location.href }); }
@@ -61,7 +62,7 @@
       const tarjeta = forma.url ? enlace('', forma.url) : nodo('article', '');
       tarjeta.className = 'panel tarjeta' + (forma.url ? '' : ' proximamente');
       tarjeta.append(nodo('h3', forma.nombre));
-      if (!forma.url) tarjeta.append(Object.assign(nodo('span', 'Próximamente'), { className: 'sello' }));
+      if (!forma.url) tarjeta.append(Object.assign(nodo('span', traducir("paginas-creador.proximamente")), { className: 'sello' }));
       $('formas-apoyo').append(tarjeta);
     }
     for (const item of datos.gratis || []) {

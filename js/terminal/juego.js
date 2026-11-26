@@ -1,21 +1,27 @@
 (function (CR) {
   'use strict';
+  const traducir = typeof module !== 'undefined' ? require('../comun/idioma').t : globalThis.CR.t;
   const { $, nodo, chuleta, mapa, objetivos, capitulos, pestanas } = CR.PanelesFaro;
-  const { Bash, Misiones } = CR.Shell;
+  const { Bash } = CR.Shell;
+  const Misiones = CR.Idioma.contenido('terminal');
   const { ProgresoFaro: progreso, Sonido, SpritesFaro } = CR;
   const misiones = Misiones.capitulos.flatMap(c => c.misiones);
   const input = $('linea');
   const salida = $('salida');
   const pantalla = $('pantalla');
   const dialogo = $('victoria');
-  let sesion, mision, intentos, completada, pregunta;
+  let sesion, mision, intentos, completada, pregunta, oculta = false;
+  function ocultar(valor) {
+    oculta = valor;
+    input.type = valor ? 'password' : 'text';
+  }
   const desplazar = () => { pantalla.scrollTop = pantalla.scrollHeight; };
   const limpiar = () => salida.replaceChildren();
   function prompt(destino) {
     if (pregunta !== null) { destino.textContent = pregunta; return; }
     const home = sesion.vars.HOME;
     const ruta = sesion.cwd === home || sesion.cwd.startsWith(home + '/') ? '~' + sesion.cwd.slice(home.length) : sesion.cwd;
-    destino.replaceChildren(nodo('span', 'aprendiz@faro7', 'usuario'), nodo('span', ':'),
+    destino.replaceChildren(nodo('span', sesion.identidad.usuario + '@' + sesion.identidad.maquina, 'usuario'), nodo('span', ':'),
       nodo('span', ruta, 'ruta'), nodo('span', '$'));
   }
   function escribir(eventos) {
@@ -32,9 +38,10 @@
   }
   function iniciar(actual) {
     mision = actual;
-    sesion = Bash.sesionTerminal({ ...actual, mision: actual });
+    sesion = Bash.sesionTerminal({ ...actual, idioma: CR.Idioma.actual(), mision: actual });
     progreso.abrir(actual.id);
     pregunta = null;
+    ocultar(false);
     completada = false;
     intentos = 0;
     input.value = '';
@@ -44,13 +51,15 @@
     const capitulo = Misiones.capitulos[c - 1];
     $('numero-mision').textContent = capitulo.titulo + ' · ' + i + ' / ' + capitulo.misiones.length;
     $('titulo-mision').textContent = actual.titulo;
-    $('texto-mision').textContent = 'Lumen: ' + actual.texto;
+    $('texto-mision').textContent = "Lumen: " + actual.texto;
+    $('aviso-simulacion').hidden = capitulo.temporada !== 2;
     $('texto-pista').textContent = '';
     $('pista').disabled = false;
     prompt($('prompt'));
     objetivos(actual, sesion);
     mapa(sesion);
-    chuleta(aprendidos(true), $('chuleta'));
+    chuleta([...new Set([...aprendidos(true), 'base64', 'xxd', 'md5sum', 'sha256sum', 'curl', 'find', 'ls',
+      'sudo', CR.Idioma.actual() === 'en' ? 'submit' : 'enviar'])], $('chuleta'));
     input.focus();
   }
   function victoria() {
@@ -61,12 +70,12 @@
     const nuevas = mision.comandos.filter(c => !antes.includes(c));
     const siguiente = misiones[misiones.indexOf(mision) + 1];
     $('torre').hidden = Boolean(siguiente);
-    $('titulo-victoria').textContent = siguiente ? 'Misión cumplida' : 'Faro-7 encendido';
-    $('cierre').textContent = 'Lumen: ' + mision.cierre;
+    $('titulo-victoria').textContent = siguiente ? traducir("terminal.mision_cumplida_2") : traducir("terminal.faro_7_encendido_2");
+    $('cierre').textContent = "Lumen: " + mision.cierre;
     $('aprendido').replaceChildren();
-    if (!siguiente) $('aprendido').append(nodo('p', 'Has aprendido ' + aprendidos(false).length + ' comandos.'));
+    if (!siguiente) $('aprendido').append(nodo('p', traducir("terminal.has_aprendido") + aprendidos(false).length + traducir("terminal.comandos")));
     chuleta(nuevas.length ? nuevas : mision.comandos, $('aprendido').appendChild(nodo('div')));
-    $('siguiente').textContent = siguiente ? 'Siguiente misión' : 'Ver capítulos';
+    $('siguiente').textContent = siguiente ? traducir("terminal.siguiente_mision_2") : traducir("terminal.ver_capitulos");
     if (!siguiente) SpritesFaro.encendido($('torre'), 0);
     dialogo.showModal();
     $('siguiente').focus();
@@ -78,13 +87,14 @@
     const eco = nodo('div');
     const etiqueta = nodo('span');
     prompt(etiqueta);
-    eco.append(etiqueta, document.createTextNode(' ' + linea));
+    eco.append(etiqueta, document.createTextNode(oculta ? '' : ' ' + linea));
     salida.append(eco);
     sesion.columnas = Math.max(16, Math.floor((pantalla.clientWidth - 28) / (parseFloat(getComputedStyle(input).fontSize) * .6)));
     const resultado = sesion.ejecutar(linea);
     escribir(resultado.eventos);
-    if (resultado.aviso) escribir([{ texto: 'Lumen: ' + resultado.aviso + '\n', estilo: 'guia' }]);
+    if (resultado.aviso) escribir([{ texto: "Lumen: " + resultado.aviso + '\n', estilo: 'guia' }]);
     pregunta = resultado.pregunta ?? null;
+    ocultar(Boolean(resultado.oculta));
     input.value = '';
     teclado.reset();
     prompt($('prompt'));
@@ -99,7 +109,7 @@
     $('capitulos').hidden = !indice;
     $('guardia').hidden = indice;
     $('enlace-capitulos').href = indice ? '#mision-' + (mision?.id || progreso.ultima() || '1-1') : '#capitulos';
-    $('enlace-capitulos').textContent = indice ? 'Volver a la terminal' : 'Capítulos';
+    $('enlace-capitulos').textContent = indice ? traducir("terminal.volver_a_la_terminal_2") : traducir("terminal.capitulos_2");
     if (indice) { capitulos(misiones.length); return; }
     const id = location.hash.startsWith('#mision-') ? location.hash.slice(8) : progreso.ultima();
     const actual = misiones.find(m => m.id === id) || misiones[0];
@@ -115,6 +125,7 @@
       salida.append(eco);
       sesion.cancelar();
       pregunta = null;
+      ocultar(false);
       prompt($('prompt'));
       desplazar();
     },

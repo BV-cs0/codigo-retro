@@ -1,5 +1,6 @@
 (function (CR) {
 'use strict';
+const traducir = typeof module !== 'undefined' ? require('../../comun/idioma').t : globalThis.CR.t;
 const Shell = CR.Shell = CR.Shell || {};
 const { registrar: R, opciones, lineas } = typeof module !== 'undefined' ? require('./base') : Shell.Base;
 function cambios(a, b) {
@@ -31,7 +32,7 @@ function mostrar(c, a, b, [x, i, y, j]) {
   if (tipo === 'c') c.out('---\n');
   b.slice(y, j).forEach(l => prefijo('> ', l));
 }
-R('diff', 'Compara dos archivos línea por línea.', ['diff antes.txt despues.txt', 'cat antes.txt | diff - despues.txt'], c => {
+R('diff', traducir("shell.compara_dos_archivos_linea_por"), ['diff antes.txt despues.txt', 'cat antes.txt | diff - despues.txt'], c => {
   const { args } = opciones(c);
   if (args.length !== 2) return c.invalido('diff');
   const datos = [];
@@ -41,7 +42,7 @@ R('diff', 'Compara dos archivos línea por línea.', ['diff antes.txt despues.tx
   }
   if (c.codigo) return;
   const [a, b] = datos;
-  if (a.length > 5000 || b.length > 5000) return c.error('diff: se admiten hasta 5000 líneas por archivo.', 2);
+  if (a.length > 5000 || b.length > 5000) return c.error(traducir("shell.diff_se_admiten_hasta_5000"), 2);
   const bloques = cambios(a, b);
   for (const bloque of bloques) mostrar(c, a, b, bloque);
   if (bloques.length) c.codigo = 1;

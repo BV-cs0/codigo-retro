@@ -14,9 +14,10 @@ const respuesta = (valor, texto) => ({ texto, tipo: 'respuesta', valor });
 const leer = ruta => ({ texto: 'Lee ' + ruta, tipo: 'leyo', ruta });
 const normalizar = texto => texto.trim().replace(/\s+/g, ' ').toLowerCase();
 function cumple(o, s) {
+  if (o.tipo === 'faro2') return o.comprobar(s);
   if (o.tipo === 'usaComando') return s.invocaciones.some(p => p.nombre === o.comando && (!o.args || o.args(p.args, p.cwd)));
   if (o.tipo === 'respuesta') return s.respuestas.has(normalizar(o.valor));
-  const ruta = rutaAbsoluta(o.ruta, HOME);
+  const ruta = rutaAbsoluta(o.ruta, s.identidad.home, s.identidad.home);
   const nodo = s.fs.nodos.get(ruta);
   if (o.tipo === 'cwd') return s.cwd === ruta;
   if (o.tipo === 'leyo') return s.leidos.has(ruta);
@@ -252,7 +253,10 @@ function objetivos(mision, sesion) {
 capitulos.forEach((capitulo, c) => capitulo.misiones.forEach((mision, i) => {
   mision.id = (c + 1) + '-' + (i + 1);
 }));
+const temporada2 = typeof module !== 'undefined' ? require('./misiones-faro2') : Shell.MisionesFaro2;
+capitulos.push(...temporada2('es'));
 Shell.Misiones = { capitulos, objetivos };
+CR.Idioma?.registrar('es', 'terminal', Shell.Misiones);
 if (typeof module !== 'undefined') module.exports = CR.Shell.Misiones;
 })(globalThis.CR = globalThis.CR || {});
 

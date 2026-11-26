@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const traducir = typeof module !== 'undefined' ? require('../../comun/idioma').t : globalThis.CR.t;
   const float = valor => ({ tipo: 'float', valor });
   const tupla = items => ({ tipo: 'tuple', items });
   const dict = () => ({ tipo: 'dict', pares: new Map() });
@@ -7,18 +8,18 @@
   function clave(x, error) {
     if (numerico(x)) return num(x);
     if (typeof x === 'string' || x === null) return x;
-    error('TypeError', 'Este valor no puede ser una clave.', "unhashable type: '" + tipo(x) + "'");
+    error('TypeError', traducir("curso.este_valor_no_puede_ser"), "unhashable type: '" + tipo(x) + "'");
   }
   function poner(d, k, v, error) {
     const id = clave(k, error);
-    if (!d.pares.has(id) && d.pares.size >= 10000) error('OverflowError', 'El diccionario está lleno.');
+    if (!d.pares.has(id) && d.pares.size >= 10000) error('OverflowError', traducir("curso.el_diccionario_esta_lleno"));
     d.pares.set(id, [d.pares.has(id) ? d.pares.get(id)[0] : k, v]);
   }
   function obtener(d, k, error, defecto, borrar = false) {
     const id = clave(k, error);
     if (!d.pares.has(id)) {
       if (defecto !== undefined) return defecto;
-      error('KeyError', 'Esa clave no existe en el diccionario.', repr(k));
+      error('KeyError', traducir("curso.esa_clave_no_existe_en"), repr(k));
     }
     const valor = d.pares.get(id)[1];
     if (borrar) d.pares.delete(id);
@@ -54,7 +55,7 @@
       return c;
     }).join('') + comilla;
   }
-  function repr(x, error = () => { throw new RangeError('Representación demasiado larga'); }, vistos = new Set()) {
+  function repr(x, error = () => { throw new RangeError(traducir("curso.representacion_demasiado_larga")); }, vistos = new Set()) {
     switch (tipo(x)) {
       case 'str': return cita(x);
       case 'bool': return x ? 'True' : 'False';
@@ -98,21 +99,21 @@
   }
   const str = (x, error) => typeof x === 'string' ? x : x?.tipo === 'excepcion' ? x.error.original : repr(x, error);
   function limite(x, error) {
-    if (tipo(x) === 'int' && Math.abs(x) > 2 ** 53) error('OverflowError', 'Número demasiado grande.');
-    if (typeof x === 'string' && x.length > 100000 && [...x].length > 100000) error('OverflowError', 'El texto supera los 100 000 caracteres.');
-    if (Array.isArray(x) && x.length > 10000) error('OverflowError', 'La lista supera los 10 000 elementos.');
+    if (tipo(x) === 'int' && Math.abs(x) > 2 ** 53) error('OverflowError', traducir("curso.numero_demasiado_grande"));
+    if (typeof x === 'string' && x.length > 100000 && [...x].length > 100000) error('OverflowError', traducir("curso.el_texto_supera_los_100"));
+    if (Array.isArray(x) && x.length > 10000) error('OverflowError', traducir("curso.la_lista_supera_los_10"));
     return x;
   }
   function leerEntero(texto, error) {
     const magnitud = texto.replace(/^[+-]?0*/, '') || '0';
     const maximo = '9007199254740992';
     if (magnitud.length > maximo.length || (magnitud.length === maximo.length && magnitud > maximo)) {
-      error('OverflowError', 'Número demasiado grande.');
+      error('OverflowError', traducir("curso.numero_demasiado_grande"));
     }
     return Number(texto) || 0;
   }
   function entero(x, error) {
-    if (!['int', 'bool'].includes(tipo(x))) error('TypeError', 'Se necesita un número entero.');
+    if (!['int', 'bool'].includes(tipo(x))) error('TypeError', traducir("curso.se_necesita_un_numero_entero"));
     return num(x);
   }
   function* iterable(x, error) {
@@ -124,10 +125,10 @@
       const d = x.base || x, tamaño = d.pares.size;
       for (const [k, v] of d.pares.values()) {
         yield x.tipo === 'dict_items' ? tupla([k, v]) : x.tipo === 'dict_values' ? v : k;
-        if (d.pares.size !== tamaño) error('RuntimeError', 'El tamaño del diccionario cambió al recorrerlo.', 'dictionary changed size during iteration');
+        if (d.pares.size !== tamaño) error('RuntimeError', traducir("curso.el_tamano_del_diccionario_cambio"), 'dictionary changed size during iteration');
       }
     }
-    else error('TypeError', 'Este valor no se puede recorrer.');
+    else error('TypeError', traducir("curso.este_valor_no_se_puede"));
   }
   function igual(a, b) {
     if (numerico(a) && numerico(b)) return num(a) === num(b);
@@ -146,7 +147,7 @@
     }
     if (Array.isArray(a) && Array.isArray(b)) return ordenarListas(a, b, error);
     if (a?.tipo === 'tuple' && b?.tipo === 'tuple') return ordenarListas(a.items, b.items, error);
-    error('TypeError', 'No se pueden ordenar valores de estos tipos.');
+    error('TypeError', traducir("curso.no_se_pueden_ordenar_valores"));
   }
   function ordenarListas(a, b, error) {
     for (let i = 0; i < Math.min(a.length, b.length); i++) {
@@ -159,7 +160,7 @@
     if (op === 'in' || op === 'not in') {
       let existe;
       if (typeof b === 'string') {
-        if (typeof a !== 'string') error('TypeError', 'Para buscar dentro de un texto, usa otro texto.');
+        if (typeof a !== 'string') error('TypeError', traducir("curso.para_buscar_dentro_de_un"));
         existe = b.includes(a);
       } else if (b?.tipo === 'dict' || b?.tipo === 'dict_keys') {
         existe = (b.base || b).pares.has(clave(a, error));
@@ -187,7 +188,7 @@
   function repetir(x, n, error) {
     n = Math.max(0, n);
     if (!x.length || !n) return typeof x === 'string' ? '' : [];
-    if (x.length * n > (typeof x === 'string' ? 100000 : 10000)) error('OverflowError', 'La repetición supera el límite de tamaño.');
+    if (x.length * n > (typeof x === 'string' ? 100000 : 10000)) error('OverflowError', traducir("curso.la_repeticion_supera_el_limite"));
     return typeof x === 'string' ? x.repeat(n) : Array.from({ length: n }, () => x).flat();
   }
   function operar(op, a, b, error) {
@@ -199,16 +200,16 @@
     if (!numerico(a) || !numerico(b)) {
       const original = "unsupported operand type(s) for " + op + ": '" + tipo(a) + "' and '" + tipo(b) + "'";
       if (op === '+' && (typeof a === 'string' || typeof b === 'string')) {
-        error('TypeError', 'No se puede sumar un texto y un número. Convierte el número con str() o usa una f-string.',
+        error('TypeError', traducir("curso.no_se_puede_sumar_un"),
           typeof a === 'string' ? 'can only concatenate str (not "' + tipo(b) + '") to str' : original);
       }
-      error('TypeError', 'No se puede hacer esta operación con estos valores.', original);
+      error('TypeError', traducir("curso.no_se_puede_hacer_esta"), original);
     }
     const x = num(a), y = num(b);
     if ((!y && ['/', '//', '%'].includes(op)) || (!x && y < 0 && op === '**')) {
       // Mensajes de CPython 3.14.
       const mensaje = op === '**' ? 'zero to a negative power' : 'division by zero';
-      error('ZeroDivisionError', 'No se puede dividir entre cero.', mensaje);
+      error('ZeroDivisionError', traducir("curso.no_se_puede_dividir_entre"), mensaje);
     }
     const flotante = tipo(a) === 'float' || tipo(b) === 'float' || op === '/' || (op === '**' && y < 0);
     let resultado;
@@ -222,14 +223,18 @@
     if (!flotante && Math.abs(resultado) === 2 ** 53 && ['+', '-', '*', '**'].includes(op)) {
       const [i, j] = [BigInt(x), BigInt(y)];
       const exacto = { '+': () => i + j, '-': () => i - j, '*': () => i * j, '**': () => i ** j }[op]();
-      if (exacto < -(2n ** 53n) || exacto > 2n ** 53n) error('OverflowError', 'Número demasiado grande.');
+      if (exacto < -(2n ** 53n) || exacto > 2n ** 53n) error('OverflowError', traducir("curso.numero_demasiado_grande"));
     }
     return limite(flotante ? float(resultado) : resultado || 0, error);
   }
-  function posicion(i, n, error, nombre) {
+  const etiquetasSecuencia = { string: 'curso.el_texto', tuple: 'curso.la_tupla', list: 'curso.la_lista' };
+  function posicion(i, n, error, tipo = 'list') {
     const j = i < 0 ? n + i : i;
-    if (j < 0 || j >= n) error('IndexError', nombre + ' tiene ' + n + ' elementos: las posiciones válidas van de 0 a ' + (n - 1) + '.',
-      ({ 'El texto': 'string', 'La tupla': 'tuple' })[nombre] ? ({ 'El texto': 'string', 'La tupla': 'tuple' })[nombre] + ' index out of range' : 'list index out of range');
+    if (j < 0 || j >= n) {
+      const nombre = traducir(etiquetasSecuencia[tipo]);
+      const mensaje = nombre + traducir("curso.tiene") + n + traducir("curso.elementos_las_posiciones_validas_van") + (n - 1) + '.';
+      error('IndexError', mensaje, tipo + ' index out of range');
+    }
     return j;
   }
   const Valores = { float, tipo, numerico, num, verdad, repr, str, limite, leerEntero, entero, iterable, igual, ordenar, comparar, operar, posicion,
