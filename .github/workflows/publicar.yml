@@ -15,6 +15,8 @@ jobs:
   exe:
     runs-on: windows-latest
     steps:
+      # Sin conversión a CRLF: el juego va dentro del .exe tal como está en el repositorio.
+      - run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
