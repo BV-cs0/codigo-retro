@@ -8,6 +8,46 @@
   const tokensBash = /#.*|"(?:\\.|[^"\\])*"?|'[^']*'?|\$(?:\{[^}]*\}|[A-Za-z_]\w*|[0-9@*?#])|[A-Za-z_]\w*|\d+|[^]/g;
   const palabraBash = /^(if|then|elif|else|fi|case|in|esac|for|while|until|do|done|function|local|return|break|continue)$/;
 
+  const tokensSQL = /--.*|\/\*[^]*?\*\/|\/\*[^]*|'(?:''|[^'])*'?|"(?:""|[^"])*"?|(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?|[\p{L}_][\p{L}\p{N}_]*|[^]/giu;
+  const palabraSQL = /^(SELECT|FROM|WHERE|AS|GROUP|BY|HAVING|ORDER|ASC|DESC|LIMIT|OFFSET|DISTINCT|JOIN|INNER|LEFT|OUTER|ON|UNION|ALL|AND|OR|NOT|IS|NULL|IN|BETWEEN|LIKE|CASE|WHEN|THEN|ELSE|END|EXISTS|CREATE|DROP|TABLE|IF|INTEGER|REAL|TEXT|PRIMARY|KEY|UNIQUE|DEFAULT|INSERT|INTO|VALUES|UPDATE|SET|DELETE)$/i;
+  const funcionSQL = /^(COUNT|SUM|AVG|MIN|MAX|UPPER|LOWER|LENGTH|ROUND|ABS|COALESCE|IFNULL|SUBSTR|TRIM|REPLACE)$/i;
+
+  function filaSQL(piezas, rango, inicio) {
+    const fila = document.createElement('span');
+    fila.className = 'fila';
+    for (const { token, clase } of piezas || []) {
+      const cortes = [0, ...[rango?.inicio, rango?.fin].map(n => n - inicio)
+        .filter(n => n > 0 && n < token.length), token.length];
+      for (let i = 1; i < cortes.length; i++) {
+        const pieza = document.createElement('span');
+        pieza.textContent = token.slice(cortes[i - 1], cortes[i]);
+        const activo = rango && inicio + cortes[i - 1] >= rango.inicio && inicio + cortes[i] <= rango.fin;
+        pieza.className = clase + (activo ? ' traza-activa' : '');
+        fila.append(pieza);
+      }
+      inicio += token.length;
+    }
+    fila.append('\u200b');
+    return fila;
+  }
+
+  function piezasSQL(texto) {
+    const filas = [[]];
+    for (const token of texto.match(tokensSQL) || []) {
+      let clase = '';
+      if (/^(--|\/\*)/.test(token)) clase = 'comentario';
+      else if (/^['"]/.test(token)) clase = 'cadena';
+      else if (palabraSQL.test(token)) clase = 'palabra';
+      else if (funcionSQL.test(token)) clase = 'orden';
+      else if (/^(?:\d|\.\d)/.test(token)) clase = 'numero';
+      token.split('\n').forEach((trozo, i) => {
+        if (i) filas.push([]);
+        if (trozo) filas.at(-1).push({ token: trozo, clase });
+      });
+    }
+    return filas;
+  }
+
   function filaColoreada(texto, ordenes, curso) {
     const fila = document.createElement('span');
     fila.className = 'fila';
@@ -28,11 +68,14 @@
     return fila;
   }
 
-  function pintarFilas(entrada, espejo, numeros, ordenes, linea, clase, curso) {
+  function pintarFilas(entrada, espejo, numeros, ordenes, linea, clase, curso, rango) {
     const vista = document.createDocumentFragment();
     const margen = document.createDocumentFragment();
+    const sql = curso === 'sql' ? piezasSQL(entrada.value) : null;
+    let inicio = 0;
     entrada.value.split('\n').forEach((texto, i) => {
-      const fila = filaColoreada(texto, ordenes, curso);
+      const fila = sql ? filaSQL(sql[i], rango, inicio) : filaColoreada(texto, ordenes, curso);
+      inicio += texto.length + 1;
       const numero = document.createElement('span');
       if (i + 1 === linea) fila.classList.add(clase);
       numero.textContent = i + 1;
@@ -104,13 +147,14 @@
 
     pintar() {
       const { entrada, espejo, numeros, ordenes, linea, clase, nivel } = this;
-      pintarFilas(entrada, espejo, numeros, ordenes, linea, clase, nivel.lenguaje || nivel.curso);
+      pintarFilas(entrada, espejo, numeros, ordenes, linea, clase, nivel.lenguaje || nivel.curso, this.rango);
       const cantidad = window.CR.Python.contarLineas(entrada.value);
       this.contador.textContent = traducir("comun.lineas") + cantidad + (nivel.maxLineas ? ' / ' + nivel.maxLineas : '');
       this.sincronizar();
     }
 
     limpiar() {
+      this.rango = null;
       this.linea = 0;
       this.clase = '';
       this.error.textContent = '';
@@ -135,14 +179,23 @@
     texto() { return this.entrada.value; }
     bloquear(estado) { this.entrada.readOnly = estado; }
 
-    destacar(numero, mensaje = '') {
+    destacar(numero, mensaje = '', mostrarMensaje = true) {
+      this.rango = null;
       this.linea = numero;
       this.clase = mensaje ? 'fallida' : 'activa';
-      this.error.textContent = mensaje;
+      this.error.textContent = mostrarMensaje ? mensaje : '';
       if (mensaje) this.entrada.setAttribute('aria-invalid', 'true');
       else this.entrada.removeAttribute('aria-invalid');
       this.pintar();
       revelarFila(this.entrada, this.espejo.children[numero - 1]);
+      this.sincronizar();
+    }
+
+    destacarRango(inicio, fin) {
+      this.rango = { inicio, fin };
+      this.pintar();
+      const linea = this.entrada.value.slice(0, inicio).split('\n').length;
+      revelarFila(this.entrada, this.espejo.children[linea - 1]);
       this.sincronizar();
     }
 

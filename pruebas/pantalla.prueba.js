@@ -628,4 +628,70 @@ module.exports = prueba => {
   probarCurso(prueba);
   probarProyecto(prueba);
   probarCursoEnIngles(prueba);
+  prueba('SQL en pantalla · editor, tablas, traza y progreso bilingüe', () => {
+    const datos = { 'js/sql/temas-seguridad.js': `CR.Idioma.registrar('es', 'sqlSeguridad', {
+      id: 'prueba', titulo: 'Prueba', pasos: [{
+        id: 'ejemplo', tipo: 'explica', titulo: 'Ejemplo', texto: ['Mira la tabla.'],
+        bd: "CREATE TABLE t (id INTEGER PRIMARY KEY, nombre TEXT); INSERT INTO t VALUES (1,'Ana')",
+        codigo: 'SELECT id, nombre FROM t WHERE id=?', parametros: [1]
+      }]
+    });`, 'js/sql/en/temas-seguridad.js': `CR.Idioma.registrar('en', 'sqlSeguridad', {
+      id: 'prueba', titulo: 'Test', pasos: [{
+        id: 'ejemplo', tipo: 'explica', titulo: 'Example', texto: ['Look at the table.'],
+        bd: "CREATE TABLE t (id INTEGER PRIMARY KEY, name TEXT); INSERT INTO t VALUES (1,'Ana')",
+        codigo: 'SELECT name FROM t'
+      }]
+    });` };
+    const memoria = new Map();
+    const storage = { getItem: k => memoria.get(k), setItem: (k, v) => memoria.set(k, v) };
+    const es = cargar('sql.html', storage, datos).ids;
+    es.cartuchos.children.at(-1).click();
+    es.ejecutar.click();
+    assert.equal(es.salida.children[0].children[0].tagName, 'TABLE');
+    assert.equal(es.salida.children[1].textContent, '1 fila');
+    assert.equal(es.tablas.children[0].children[0].textContent, 't');
+    es.paso.click();
+    assert.match(es.etapa.textContent, /FROM/);
+    es['traza-siguiente'].click();
+    assert.match(es.etapa.textContent, /WHERE/);
+    es.codigo.value = "UPDATE t SET nombre='Bina'";
+    es.parametros.value = '';
+    es.ejecutar.click();
+    assert.equal(es.tablas.children[0].children[1].children[0].children[1].children[0].className, 'modificado');
+    es['restaurar-datos'].click();
+    assert.equal(es.tablas.children[0].children[1].children[0].children[1].children[0].children[1].textContent, 'Ana');
+    es.restaurar.click();
+    assert.match(es.codigo.value, /SELECT id, nombre/);
+    assert.ok(JSON.parse(memoria.get('cr-sql')).ejemplo.hecho);
+    const en = cargar('sql.html', storage, datos, 'en').ids;
+    en.continuar.click();
+    assert.equal(en['titulo-paso'].textContent, 'Example');
+    assert.equal(en.archivo.textContent, 'farm.sql');
+    assert.equal(en.siguiente.disabled, false);
+  });
+
+  for (const modo of ['texto', 'parametros']) prueba('SQL formulario en pantalla · ' + modo, () => {
+    const paso = {
+      tipo: 'formulario', id: 'buscar', titulo: 'Busca animales', texto: ['Elige una especie.'],
+      bd: "CREATE TABLE animales (nombre TEXT, especie TEXT); INSERT INTO animales VALUES ('Luna', 'cabra')",
+      campos: [{ nombre: 'especie', etiqueta: 'Especie' }], modo,
+      plantilla: "SELECT nombre FROM animales WHERE especie = '{especie}'",
+      mensajes: { conFilas: 'Encontré a {nombre}', sinFilas: 'No hay animales', error: 'La consulta falló' },
+      objetivo: 'Encuentra un animal.', casos: [{ valores: { especie: 'cabra' }, conFilas: true }]
+    };
+    const datos = { 'js/sql/temas-seguridad.js': "CR.Idioma.registrar('es', 'sqlSeguridad', " +
+      JSON.stringify({ id: 'prueba', titulo: 'Prueba', pasos: [paso] }) + ");" };
+    const memoria = new Map();
+    const storage = { getItem: k => memoria.get(k), setItem: (k, v) => memoria.set(k, v) };
+    const { ids } = cargar('sql.html', storage, datos);
+    ids.cartuchos.children.at(-1).click();
+    const entrada = ids.campos.children[0].children[0];
+    entrada.value = 'cabra';
+    ids.formulario.emitir('submit', { preventDefault() {} });
+    assert.equal(ids['mensaje-form'].textContent, 'Encontré a Luna');
+    assert.equal(ids['salida-form'].children[0].children[0].tagName, 'TABLE');
+    assert.match(ids['consulta-final'].textContent, modo === 'texto' ? /'cabra'/ : /\?\nParámetros · "cabra"/);
+    assert.ok(JSON.parse(memoria.get('cr-sql')).buscar.hecho);
+  });
+
 };

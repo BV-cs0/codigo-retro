@@ -1,5 +1,11 @@
 # Novedades
 
+## 1.4.0 (2026-11-27)
+
+- Consultas con SQL: 8 temas y 66 pasos con Bina en español e inglés. Incluye un motor SQL simulado, resultados en tablas, consultas paso a paso y un informe de la granja.
+- Tema 8, seguridad: ves cómo funciona la inyección SQL en una tienda simulada (comillas, `--`, `OR '1'='1'` y `UNION`) y la arreglas con consultas con parámetros.
+- Las preguntas de «¿qué pasará?» explican la respuesta al acertar.
+
 ## 1.3.0 (2026-11-26)
 
 - Operación Atalaya: 20 retos CTF de ciberseguridad con la lechuza Nix, en 5 categorías: reconocimiento, criptografía, análisis de logs, permisos y escalada, y web. El último reto abre la pantalla final.

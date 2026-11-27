@@ -1,6 +1,6 @@
 (function (CR) {
   'use strict';
-  CR.VERSION = '1.3.0';
+  CR.VERSION = '1.4.0';
   // GitHub Pages guarda el HTML hasta 10 minutos. Si una página antigua recibe ya los archivos
   // nuevos (su ?v= no coincide con CR.VERSION), se recarga una sola vez para traer el HTML nuevo.
   (function comprobarVersion() {
@@ -89,6 +89,7 @@
   if (typeof module !== 'undefined') {
     require('../idiomas/es');
     require('../idiomas/en');
+    require('../idiomas/faro');
     module.exports = { t: CR.t, Idioma: CR.Idioma };
   }
   if (typeof document !== 'undefined') {

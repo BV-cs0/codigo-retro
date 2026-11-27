@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-t="sql.portada">Consultas con SQL — Código Retro</title>
+  <link rel="stylesheet" href="css/estilo.css?v=1.4.0">
+  <link rel="stylesheet" href="css/curso.css?v=1.4.0">
+  <link rel="stylesheet" href="css/sql.css?v=1.4.0">
+</head>
+<body class="curso curso-sql">
+  <header class="barra">
+    <h1 data-t="sql.titulo">Consultas con SQL</h1>
+    <nav aria-label="Navegación del curso" data-t-aria="bash.navegacion_del_curso">
+      <a class="boton" href="index.html" data-t="apoya.menu_principal">← Menú principal</a>
+      <button id="temas" hidden data-t="bash.ver_temas">Ver temas</button>
+      <div class="selector-idioma" role="group" aria-label="Idioma" data-t-aria="idioma.selector">
+        <button type="button" data-idioma="es" aria-pressed="true" aria-label="Español" data-t-aria="idioma.es">ES</button>
+        <span aria-hidden="true">|</span>
+        <button type="button" data-idioma="en" aria-pressed="false" aria-label="Inglés" data-t-aria="idioma.en">EN</button>
+      </div>
+    </nav>
+  </header>
+  <main class="contenedor">
+    <section id="indice">
+      <div class="cabecera-partida">
+        <h2 data-t="bash.aprende_paso_a_paso">Aprende paso a paso</h2>
+        <button id="continuar" class="primario" data-t="bash.continuar_donde_lo_deje">Continuar donde lo dejé</button>
+      </div>
+      <div id="cartuchos"></div>
+    </section>
+    <section id="paso-curso" hidden>
+      <p id="posicion"></p>
+      <h2 id="titulo-paso" tabindex="-1"></h2>
+      <div class="columnas">
+        <section class="panel leccion" aria-label="Lección" data-t-aria="bash.leccion">
+          <div class="guia">
+            <canvas id="bina" width="56" height="44" aria-hidden="true"></canvas>
+            <div class="bocadillo">
+              <strong data-t="sql.bina">Bina · granjera</strong>
+              <div id="texto"></div>
+            </div>
+          </div>
+          <div id="prediccion" hidden><h3 id="pregunta"></h3><div id="opciones"></div><div id="respuesta" role="status"></div></div>
+          <div id="reto" hidden>
+            <h3 data-t="bash.objetivo">Objetivo</h3><p id="objetivo"></p>
+            <button id="pista" data-t="bash.ver_pista">Ver pista</button>
+            <button id="solucion" hidden data-t="bash.ver_una_solucion">Ver una solución</button>
+            <p id="ayuda" role="status"></p>
+          </div>
+        </section>
+        <section id="zona-editor" class="panel">
+          <form id="formulario" hidden>
+            <div id="campos"></div>
+            <button type="submit" class="primario" data-t="bash.enviar">Enviar</button>
+            <h3 data-t="sql.consultaFinal">Consulta final</h3>
+            <pre id="consulta-final"></pre>
+            <p id="mensaje-form" role="status"></p>
+            <div id="salida-form"></div>
+          </form>
+          <div id="zona-codigo">
+            <div class="cabecera-editor"><label for="codigo" id="archivo"></label><span id="contador"></span></div>
+            <div class="editor">
+              <div id="numeros" aria-hidden="true"></div>
+              <div class="fuente-codigo">
+                <pre id="espejo" aria-hidden="true"></pre>
+                <textarea id="codigo" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="ayuda-editor"></textarea>
+              </div>
+            </div>
+            <label id="zona-parametros" hidden><span data-t="sql.parametros">Parámetros</span> <input id="parametros" autocomplete="off"></label>
+            <div class="controles">
+              <button id="ejecutar" class="primario" data-t="bash.ejecutar">▶ Ejecutar</button>
+              <button id="comprobar" hidden data-t="bash.comprobar">✔ Comprobar</button>
+              <button id="paso" data-t="bash.paso_a_paso">Paso a paso</button>
+              <button id="restaurar" data-t="bash.restaurar_codigo">↺ Restaurar código</button>
+            </div>
+            <p id="ayuda-editor" data-t="bash.tab_anade_sangria_pulsa_esc_y">Tab añade sangría. Pulsa Esc y luego Tab para salir del editor.</p>
+            <p id="error" role="status"></p>
+          </div>
+        </section>
+        <section id="resultado" class="panel">
+          <h3 id="titulo-resultados" data-t="sql.resultados">Resultados</h3>
+          <p id="error-sql" role="status"></p>
+          <p id="explicacion-error"></p>
+          <ul id="consejos"></ul>
+          <div id="salida"></div>
+          <section id="traza" hidden>
+            <p id="etapa" role="status"></p>
+            <div id="intermedia"></div>
+            <button id="traza-siguiente" data-t="sql.etapaSiguiente">Siguiente cláusula</button>
+            <button id="traza-parar" data-t="bash.parar">■ Parar</button>
+          </section>
+          <h3 data-t="sql.tablas">Tablas</h3>
+          <button id="restaurar-datos" data-t="sql.restaurarDatos">↺ Restaurar datos</button>
+          <div id="tablas"></div>
+        </section>
+        <section id="resumen" class="panel" hidden>
+          <h3 data-t="bash.chuleta">Chuleta</h3>
+          <pre id="codigo-final"></pre>
+          <button id="siguiente-tema" class="primario" data-t="curso.siguiente_tema">Siguiente tema</button>
+        </section>
+      </div>
+      <nav class="navegacion" aria-label="Pasos del tema" data-t-aria="bash.pasos_del_tema">
+        <button id="anterior" data-t="bash.anterior">← Anterior</button>
+        <div id="puntos"></div>
+        <button id="siguiente" data-t="bash.siguiente">Siguiente →</button>
+        <button id="saltar" data-t="bash.saltar_paso">Saltar paso</button>
+      </nav>
+    </section>
+  </main>
+  <script src="js/idiomas/es.js?v=1.4.0"></script>
+  <script src="js/idiomas/en.js?v=1.4.0"></script>
+  <script src="js/idiomas/faro.js?v=1.4.0"></script>
+  <script src="js/comun/idioma.js?v=1.4.0"></script>
+  <script src="js/comun/pixel.js?v=1.4.0"></script>
+  <script src="js/comun/python.js?v=1.4.0"></script>
+  <script src="js/comun/editor.js?v=1.4.0"></script>
+  <script src="js/sql/lexico.js?v=1.4.0"></script>
+  <script src="js/sql/analizador.js?v=1.4.0"></script>
+  <script src="js/sql/valores.js?v=1.4.0"></script>
+  <script src="js/sql/funciones.js?v=1.4.0"></script>
+  <script src="js/sql/expresiones.js?v=1.4.0"></script>
+  <script src="js/sql/consulta.js?v=1.4.0"></script>
+  <script src="js/sql/cambios.js?v=1.4.0"></script>
+  <script src="js/sql/motor.js?v=1.4.0"></script>
+  <script src="js/sql/progreso.js?v=1.4.0"></script>
+  <script src="js/sql/validar.js?v=1.4.0"></script>
+  <script src="js/sql/granja.js?v=1.4.0"></script>
+  <script src="js/sql/en/granja.js?v=1.4.0"></script>
+  <script src="js/sql/lecciones.js?v=1.4.0"></script>
+  <script src="js/sql/temas.js?v=1.4.0"></script>
+  <script src="js/sql/en/temas.js?v=1.4.0"></script>
+  <script src="js/sql/temas-seguridad.js?v=1.4.0"></script>
+  <script src="js/sql/en/temas-seguridad.js?v=1.4.0"></script>
+  <script src="js/sql/vistas.js?v=1.4.0"></script>
+  <script src="js/sql/pantalla.js?v=1.4.0"></script>
+</body>
+</html>

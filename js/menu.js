@@ -30,6 +30,10 @@
     document.getElementById('total-faro').textContent = ProgresoFaro.total() + traducir("menu.60_misiones");
     document.getElementById('resueltos-menu').textContent = window.CR.ProgresoTaller.total() + traducir("menu.70_resueltos");
     document.getElementById('total-bash').textContent = window.CR.ProgresoBash.total() + traducir("menu.66_pasos");
+    const sql = window.CR.ProgresoSQL;
+    const pasosSQL = sql.pasos();
+    document.getElementById('total-sql').textContent =
+      traducir('sql.progreso', { n: sql.hechos(pasosSQL), total: pasosSQL.length });
     const progreso = window.CR.ProgresoCurso;
     document.getElementById('total-curso').textContent = progreso.total() + ' / ' + progreso.cantidad + traducir("curso.pasos");
     document.querySelectorAll('[data-total]').forEach(nodo => {

@@ -6,8 +6,8 @@ const vm = require('node:vm');
 const { pathToFileURL } = require('node:url');
 
 const raiz = join(__dirname, '..');
-const paginas = ['index', 'curso', 'bash', 'ejercicios', 'terminal', 'creador', 'apoya', 'robot', 'mago', 'granja'];
-const scripts = ['js/idiomas/es.js', 'js/idiomas/en.js', 'js/comun/idioma.js'];
+const paginas = ['index', 'curso', 'bash', 'ejercicios', 'terminal', 'creador', 'apoya', 'robot', 'mago', 'granja', 'sql'];
+const scripts = ['js/idiomas/es.js', 'js/idiomas/en.js', 'js/idiomas/faro.js', 'js/comun/idioma.js'];
 const leer = archivo => readFileSync(join(raiz, archivo), 'utf8');
 
 function navegador(archivo, query = '', guardado, languages = ['es-ES'], bloquear = false) {

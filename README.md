@@ -12,6 +12,7 @@ Es gratis, sin anuncios y sin cuentas. Funciona entero en el navegador: no insta
 |---|---|
 | **Curso de Python** | 11 temas y 114 pasos: variables, condiciones, bucles, listas, funciones, textos, diccionarios, errores, `input()` y un proyecto final, *Adivina el número*. |
 | **Scripting con Bash** | 8 temas y 66 pasos: variables y comillas, argumentos, `if` y `case`, bucles, funciones, tuberías y un proyecto final, *el informe del faro*. |
+| **Consultas con SQL** | 8 temas y 66 pasos con Bina: selecciona, filtra, ordena, agrupa, une tablas y cambia datos en una granja simulada. Incluye consultas paso a paso, un informe de la granja y un tema de seguridad: la inyección SQL y cómo evitarla con parámetros. |
 | **Taller de ejercicios** | 70 ejercicios (55 de Python y 15 de Bash) de tipo *crea*, *diseña*, *completa*, *ordena* y *arregla*. El juego te dice si tu solución está bien y por qué. |
 | **El Faro** | Juego de terminal Linux con 12 capítulos y 60 misiones. La segunda temporada añade procesos, entorno, enlaces, espacio en disco y una red simulada. |
 | **Operación Atalaya** | 20 retos CTF de ciberseguridad con la lechuza Nix: reconocimiento, criptografía, análisis de logs, permisos y escalada, y web. Todo pasa en un sistema simulado, con aviso ético al empezar. |
@@ -59,6 +60,7 @@ Para comparar con los programas reales:
   Para `which`, compara sustituyendo la carpeta real de prueba por `cwd`. Para `ls -l`, compara permisos,
   número de enlaces, tamaño y `nombre -> destino`, omitiendo los campos locales de propietario, grupo y fecha.
 - `node pruebas/exportar-bash.js` exporta scripts para ejecutarlos con Bash.
+- `node pruebas/exportar-sql.js --idioma es > casos.json` exporta las consultas del motor y del curso de SQL. Compáralas con SQLite usando `python pruebas/comparar-sql.py casos.json`.
 - `node pruebas/exportar-bash.js --idioma en` exporta los casos en inglés del curso y del Taller. Los campos `cwd` y `home` son rutas relativas a la raíz de cada caso. Usa `archivo` como nombre del script si el caso lo indica. El nombre por defecto es `script.sh`.
 
 ## Versionado de archivos

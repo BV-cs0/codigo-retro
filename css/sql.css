@@ -1,0 +1,23 @@
+.curso-sql { --acento: #a8e894; --fondo: #172118; }
+.curso-sql .columnas > * { min-width: 0; }
+.curso-sql .guia canvas { width: 52px; flex: 0 0 52px; image-rendering: pixelated; }
+.curso-sql .bocadillo { min-width: 0; overflow-wrap: anywhere; }
+.curso-sql #resultado { overflow-wrap: anywhere; }
+.curso-sql pre:not(#espejo) { white-space: pre-wrap; overflow-wrap: anywhere; }
+.curso-sql .tabla-sql { overflow: auto; max-height: 22rem; background: #111b14; }
+.curso-sql table { width: 100%; border-collapse: collapse; font: .9rem monospace; }
+.curso-sql :is(td, th) { border-bottom: 1px solid #415748; padding: .4rem; text-align: left; white-space: nowrap; }
+.curso-sql .num { text-align: right; }
+.curso-sql .nulo, .curso-sql #explicacion-error { color: #bfc7bf; }
+.curso-sql .nulo { font-style: italic; }
+.curso-sql :is(#error, #error-sql) { color: #ff9c9c; }
+.curso-sql .nuevo { background: #284b32; }
+.curso-sql .modificado { background: #514223; }
+.curso-sql .borrado { color: #ffb3b3; text-decoration: line-through; }
+.curso-sql label { display: block; }
+.curso-sql input { max-width: 100%; margin-block: .3rem; font: inherit; }
+.curso-sql #campos { margin-bottom: .6rem; }
+.curso-sql .traza-activa { background: #426045; }
+.portada-sql { --acento: #a8e894; }
+.portada-sql .escena { background: #253d2b; }
+
