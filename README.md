@@ -1,6 +1,6 @@
 # Código Retro
 
-Juego retro de pixel art para aprender a programar en **Python**, usar la **terminal de Linux** y escribir **scripts de Bash**. Está pensado para personas de 15 años en adelante y adultos.
+Juego retro de pixel art para aprender a programar en **Python**, usar la **terminal de Linux**, escribir **scripts de Bash**, hacer **consultas SQL** y practicar **ciberseguridad** con retos CTF. Está pensado para personas de 15 años en adelante y adultos, y se puede jugar en español o en inglés.
 
 **Juega en el navegador:** https://bv-cs0.github.io/codigo-retro/
 
@@ -26,8 +26,8 @@ En cada paso puedes:
 
 ## Cómo jugar sin internet
 
-1. Descarga el repositorio (**Code → Download ZIP**) y descomprímelo.
-2. Abre `index.html` con doble clic.
+- **En Windows:** descarga `CodigoRetro.exe` desde la última [Release](https://github.com/BV-cs0/codigo-retro/releases/latest). Junto a él está su `.sha256` para comprobar la descarga. Como no está firmado, Windows puede avisar con «Windows protegió su PC»: pulsa *Más información* → *Ejecutar de todas formas*. Si hay una versión nueva, el pie del menú lo avisa con el enlace para descargarla. Nunca descarga nada por su cuenta.
+- **Desde el código:** descarga el repositorio (**Code → Download ZIP**), descomprímelo y abre `index.html` con doble clic.
 
 Tu progreso se guarda en el navegador con `localStorage`. Algunos navegadores no lo guardan si abres el juego desde un archivo local. Si te pasa, usa la versión online.
 
