@@ -39,7 +39,7 @@ Tu progreso se guarda en el navegador con `localStorage`. Algunos navegadores no
 - Si algo no está soportado en el simulador, el juego lo avisa en vez de inventar una salida.
 - Los gráficos son pixel art original, dibujado en `<canvas>` con código.
 
-Los documentos de diseño de cada parte están en [`docs/especificaciones`](docs/especificaciones).
+Los documentos de diseño de cada parte están en [`docs/especificaciones`](docs/especificaciones). El `.exe` para Windows se crea con Neutralino desde [`escritorio/`](escritorio/LEEME.md), y GitHub Actions lo genera y lo publica solo en cada versión.
 
 ## Pruebas
 

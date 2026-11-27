@@ -1,0 +1,17 @@
+{
+  "name": "codigo-retro-exe",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Empaqueta Código Retro en un .exe para Windows con Neutralino",
+  "scripts": {
+    "test": "node --test pruebas/actualizador.test.js",
+    "construir": "node construir.js"
+  },
+  "author": "Bryan Valenzuela",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@neutralinojs/neu": "^11.8.0",
+    "rcedit": "^5.0.2"
+  }
+}

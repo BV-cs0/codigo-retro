@@ -6,7 +6,7 @@ require('../js/comun/idioma');
 
 function* htmlEn(carpeta) {
   for (const entrada of readdirSync(carpeta, { withFileTypes: true })) {
-    if (entrada.name.startsWith('.') || entrada.name === 'node_modules') continue;
+    if (entrada.name.startsWith('.') || entrada.name === 'node_modules' || entrada.name === 'escritorio') continue;
     const ruta = join(carpeta, entrada.name);
     if (entrada.isDirectory()) yield* htmlEn(ruta);
     else if (/\.html$/i.test(entrada.name)) yield ruta;

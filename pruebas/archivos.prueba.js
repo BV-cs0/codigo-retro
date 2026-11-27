@@ -4,8 +4,13 @@ const { readFileSync, readdirSync, existsSync } = require('node:fs');
 const { join, dirname } = require('node:path');
 const vm = require('node:vm');
 
+// escritorio/ es el empaquetador del .exe: tiene sus propias pruebas (npm test), y su aviso de
+// versión nueva sí consulta GitHub. Tampoco se miran carpetas ocultas ni dependencias.
+const OMITIR = new Set(['escritorio', 'node_modules']);
+
 function* archivos(ruta) {
   for (const entrada of readdirSync(ruta, { withFileTypes: true })) {
+    if (entrada.isDirectory() && (entrada.name.startsWith('.') || OMITIR.has(entrada.name))) continue;
     const interior = join(ruta, entrada.name);
     if (entrada.isDirectory()) yield* archivos(interior);
     else yield interior;

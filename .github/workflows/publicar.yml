@@ -1,0 +1,62 @@
+name: Publicar el .exe
+
+# Al subir una etiqueta vX.Y.Z crea CodigoRetro.exe en GitHub y publica la Release con el .exe,
+# su SHA-256 y las novedades de CHANGELOG.md. Lanzado a mano, solo crea el .exe y lo deja como
+# artefacto para probarlo, sin publicar nada.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Comprobar que la etiqueta coincide con la versión
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        run: |
+          $idioma = Get-Content js/comun/idioma.js -Raw -Encoding utf8
+          if ($idioma -notmatch "CR\.VERSION\s*=\s*'(\d+\.\d+\.\d+)'") { throw 'No encuentro CR.VERSION en js/comun/idioma.js' }
+          if ("v$($Matches[1])" -ne $env:GITHUB_REF_NAME) { throw "La etiqueta $env:GITHUB_REF_NAME no coincide con CR.VERSION $($Matches[1])" }
+
+      - name: Pruebas
+        run: |
+          node pruebas/ejecutar.js
+          node --test escritorio/pruebas/actualizador.test.js
+
+      - name: Crear el .exe
+        working-directory: escritorio
+        run: |
+          npm ci --ignore-scripts
+          node construir.js
+
+      - name: Guardar el .exe como artefacto
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: CodigoRetro
+          path: escritorio/entrega/
+
+      # pwsh (PowerShell 7) para que el título con tilde llegue bien a gh.
+      - name: Crear la Release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = $env:GITHUB_REF_NAME.TrimStart('v')
+          $cambios = Get-Content CHANGELOG.md -Raw -Encoding utf8
+          $patron = '(?ms)^## ' + [regex]::Escape($version) + '\b[^\n]*\n(.*?)(?=^## |\z)'
+          $notas = if ($cambios -match $patron) { $Matches[1].Trim() } else { "Código Retro $version." }
+          [IO.File]::WriteAllText("$env:RUNNER_TEMP\notas.md", $notas, [Text.UTF8Encoding]::new($false))
+          gh release create $env:GITHUB_REF_NAME escritorio/entrega/CodigoRetro.exe escritorio/entrega/CodigoRetro.exe.sha256 --title "Código Retro $version" --notes-file "$env:RUNNER_TEMP\notas.md"
+          if ($LASTEXITCODE) { throw 'No se pudo crear la Release.' }

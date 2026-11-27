@@ -12,6 +12,7 @@ Código Retro funciona entero en el navegador y no tiene servidor:
 
 - No pide cuentas ni datos personales.
 - No envía nada a internet. El progreso se guarda solo en tu navegador, con `localStorage`.
+- La única excepción es `CodigoRetro.exe`: al abrir el menú consulta una vez la última versión publicada en la API de GitHub de este repositorio, sin enviar datos tuyos, para avisar si hay una nueva. Nunca descarga ni instala nada (ver [`escritorio/LEEME.md`](escritorio/LEEME.md)).
 - No carga scripts, fuentes ni imágenes de otros sitios.
 - No ejecuta código con `eval` ni `new Function`. El Python y el Bash del juego son intérpretes propios y simulados: no tocan tu equipo ni tus archivos reales.
 - El texto que escribe el jugador nunca se inserta como HTML.
